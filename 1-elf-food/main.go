@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+	"sort"
 	"strconv"
 )
 
@@ -41,17 +42,20 @@ func mainErr() error {
 		}
 	}
 
-	var mostCalories int64
+	var elvesTotalCalories []int64
 	for _, elf := range elves {
 		var myCalories int64
 		for _, cal := range elf {
 			myCalories += cal
 		}
-		if myCalories > mostCalories {
-			mostCalories = myCalories
-		}
+		elvesTotalCalories = append(elvesTotalCalories, myCalories)
 	}
 
-	fmt.Println(mostCalories)
+	sort.Slice(elvesTotalCalories, func(i, j int) bool {
+		return elvesTotalCalories[i] > elvesTotalCalories[j]
+	})
+
+	fmt.Println(elvesTotalCalories[0] + elvesTotalCalories[1] + elvesTotalCalories[2])
+
 	return nil
 }
