@@ -13,6 +13,8 @@ func main() {
 	}
 }
 
+type Bag []string
+
 func mainErr() error {
 	readFile, err := os.Open("elf-sack.txt")
 	if err != nil {
@@ -21,17 +23,35 @@ func mainErr() error {
 	defer readFile.Close()
 
 	fileScanner := bufio.NewScanner(readFile)
+	var bag Bag
+	var bags []Bag
+	for fileScanner.Scan() {
+		bag = append(bag, fileScanner.Text())
+		if len(bag) == 3 {
+			bags = append(bags, bag)
+			bag = []string{} // empty bag once there are three
+		}
+	}
+
+	if len(bag) != 0 {
+		return fmt.Errorf("expected all bags to have 3 members but last bag has len %d: %s", len(bag), bag)
+	}
 
 	var rounds []int
-	fileScanner.Split(bufio.ScanLines)
-	for fileScanner.Scan() {
-		score, err := calculate(fileScanner.Text())
+	for _, bag := range bags {
+		// score, err := calculate(fileScanner.Text())
+		// if err != nil {
+		// 	return err
+		// }
+
+		// todo abstract this better to not be so hacky
+		score, err := calculateThree(bag[0], bag[1], bag[2])
 		if err != nil {
 			return err
 		}
+
 		rounds = append(rounds, score)
 	}
-	fmt.Println(rounds)
 
 	var total int
 	for _, rd := range rounds {
@@ -50,6 +70,28 @@ func calculate(raw string) (int, error) {
 	}
 
 	return scoreLetter(letter)
+}
+
+func calculateThree(bag1, bag2, bag3 string) (int, error) {
+	var rn rune
+	// todo O(n)^3 solution is bad lol
+	for _, char1 := range bag1 {
+		for _, char2 := range bag2 {
+			for _, char3 := range bag3 {
+				if char1 == char2 && char2 == char3 {
+					rn = char1
+				}
+			}
+		}
+	}
+
+	if rn == rune(0) {
+		return 0, fmt.Errorf("didn't find a duplicate char in: %s (%d), %s (%d), %s (%d) ", bag1, len(bag1), bag2, len(bag2), bag3, len(bag3))
+	}
+
+	// fmt.Println(rn)
+
+	return scoreLetter(rn)
 }
 
 func determineLetter(raw string) (rune, error) {
