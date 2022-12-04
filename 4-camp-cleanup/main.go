@@ -42,28 +42,29 @@ func mainErr() error {
 		elf2range := strings.Split(pairs[1], "-")
 
 		elf1assignment := assignment{
-			min: strToNum(elf1range[0]),
-			max: strToNum(elf1range[1]),
+			min: unsafeStrToNum(elf1range[0]),
+			max: unsafeStrToNum(elf1range[1]),
 		}
 
 		elf2assignment := assignment{
-			min: strToNum(elf2range[0]),
-			max: strToNum(elf2range[1]),
+			min: unsafeStrToNum(elf2range[0]),
+			max: unsafeStrToNum(elf2range[1]),
 		}
 
-		overlapping := checkIfOverlap(elf1assignment, elf2assignment)
-		fmt.Println(overlapping)
+		// overlapping := hasCompleteOverlap(elf1assignment, elf2assignment)
+		overlapping := hasPartialOverlap(elf1assignment, elf2assignment)
+		// fmt.Println(overlapping)
 		if overlapping {
 			countOverlappers++
 		}
 	}
 
-	// fmt.Println("overlappers:", countOverlappers)
+	fmt.Println("overlappers:", countOverlappers)
 
 	return nil
 }
 
-func checkIfOverlap(elf1, elf2 assignment) bool {
+func hasCompleteOverlap(elf1, elf2 assignment) bool {
 	if elf1.min <= elf2.min && elf1.max >= elf2.max {
 		return true
 	}
@@ -74,7 +75,19 @@ func checkIfOverlap(elf1, elf2 assignment) bool {
 	return false
 }
 
-func strToNum(str string) int {
+func hasPartialOverlap(elf1, elf2 assignment) bool {
+	// why does this work? it gives the right answer but im surprised i can just align around the min value.
+	if elf1.min <= elf2.min && elf1.max >= elf2.min {
+		return true
+	}
+
+	if elf2.min <= elf1.min && elf2.max >= elf1.min {
+		return true
+	}
+	return false
+}
+
+func unsafeStrToNum(str string) int {
 	num, err := strconv.Atoi(str)
 	if err != nil {
 		// i got lazy here
