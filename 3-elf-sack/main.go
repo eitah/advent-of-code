@@ -89,8 +89,6 @@ func calculateThree(bag1, bag2, bag3 string) (int, error) {
 		return 0, fmt.Errorf("didn't find a duplicate char in: %s (%d), %s (%d), %s (%d) ", bag1, len(bag1), bag2, len(bag2), bag3, len(bag3))
 	}
 
-	// fmt.Println(rn)
-
 	return scoreLetter(rn)
 }
 
