@@ -35,9 +35,8 @@ func mainErr() error {
 	fileScanner.Split(bufio.ScanLines)
 
 	containers, err := parseContainers()
-	fmt.Println(containers)
-	for fileScanner.Scan() {
 
+	for fileScanner.Scan() {
 		cmd, err := moveLineToCommand(fileScanner.Text())
 		if err != nil {
 			// swallow errors if unable to parse move lines
@@ -61,16 +60,14 @@ func printWordFromContainers(y Yard) {
 }
 
 func moveAllCratesAtOnce(containers Yard, cmd *MoveCommand) Yard {
-	fmt.Println(cmd.numCrates)
 	a := containers[cmd.start-1]
 	z := containers[cmd.end-1]
-	fmt.Println(string(a))
-	fmt.Println(string(z))
 	var boxesToMove CrateStack
 	if cmd.numCrates == len(a) {
 		boxesToMove = a
 		a = CrateStack{}
 	} else {
+		// todo why isn't this len(a)-1-cmd.numCrates
 		a, boxesToMove = a[:len(a)-cmd.numCrates], a[len(a)-cmd.numCrates:]
 	}
 	z = append(z, boxesToMove...)
