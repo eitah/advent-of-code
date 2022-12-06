@@ -27,23 +27,28 @@ func mainErr() error {
 		stream := fileScanner.Text()
 
 		var buf []rune
+
+		// lengthOfUniqueSignal := 4 // part 1
+		lengthOfUniqueSignal := 14 // part 2
+
 		for index, newrune := range stream {
 			if answer != 0 {
 				break
 			}
 
-			buf = addToBuf(buf, newrune)
+			buf = addToBuf(buf, newrune, lengthOfUniqueSignal)
 
 			if containsDuplicates(buf) {
 				// if there is a duplicate rune, break
 				continue
 			}
 
-			if len(buf) != 14 {
+			if len(buf) != lengthOfUniqueSignal {
+				// avoid false positives for buffers that are too short
 				continue
 			}
 
-			// this is index + 1 because it's the first character AFTER the four character signal
+			// answer is index + 1 because it's the first character AFTER the four character signal
 			answer = index + 1
 		}
 		fmt.Println("answer is", answer)
@@ -60,10 +65,11 @@ func printbuf(buf []rune) {
 	fmt.Println()
 }
 
-func addToBuf(buf []rune, newrune rune) []rune {
+// Length of unique signal is used here to truncate the search radius.
+func addToBuf(buf []rune, newrune rune, lengthOfUniqueSignal int) []rune {
 	buf = append(buf, newrune)
 
-	if len(buf) > 14 {
+	if len(buf) > lengthOfUniqueSignal {
 		_, buf = buf[0], buf[1:]
 	}
 
