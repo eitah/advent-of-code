@@ -44,7 +44,7 @@ func mainErr() error {
 			continue
 		}
 
-		containers = moveOneCrateAtATime(containers, cmd)
+		containers = moveAllCratesAtOnce(containers, cmd)
 
 	}
 	printWordFromContainers(containers)
@@ -58,6 +58,26 @@ func printWordFromContainers(y Yard) {
 	}
 
 	fmt.Println()
+}
+
+func moveAllCratesAtOnce(containers Yard, cmd *MoveCommand) Yard {
+	fmt.Println(cmd.numCrates)
+	a := containers[cmd.start-1]
+	z := containers[cmd.end-1]
+	fmt.Println(string(a))
+	fmt.Println(string(z))
+	var boxesToMove CrateStack
+	if cmd.numCrates == len(a) {
+		boxesToMove = a
+		a = CrateStack{}
+	} else {
+		a, boxesToMove = a[:len(a)-cmd.numCrates], a[len(a)-cmd.numCrates:]
+	}
+	z = append(z, boxesToMove...)
+
+	containers[cmd.start-1] = a
+	containers[cmd.end-1] = z
+	return containers
 }
 
 func moveOneCrateAtATime(containers Yard, cmd *MoveCommand) Yard {
@@ -109,25 +129,25 @@ func unsafeStrToNum(str string) int {
 
 // func pop()
 
-// func parseContainers() (Yard, error) {
-// 	return Yard{
-// 		[]rune{'D', 'L', 'V', 'T', 'M', 'H', 'F'},
-// 		[]rune{'H', 'Q', 'G', 'J', 'C', 'T', 'N', 'P'},
-// 		[]rune{'R', 'S', 'D', 'M', 'P', 'H'},
-// 		[]rune{'L', 'B', 'V', 'F'},
-// 		[]rune{'N', 'H', 'G', 'L', 'Q'},
-// 		[]rune{'W', 'B', 'D', 'G', 'R', 'M', 'P'},
-// 		[]rune{'G', 'M', 'N', 'R', 'C', 'H', 'L', 'Q'},
-// 		[]rune{'C', 'L', 'W'},
-// 		[]rune{'R', 'D', 'L', 'Q', 'J', 'Z', 'M', 'T'},
-// 	}, nil
-// }
-
-// test parse containers
 func parseContainers() (Yard, error) {
 	return Yard{
-		[]rune{'Z', 'N'},
-		[]rune{'M', 'C', 'D'},
-		[]rune{'P'},
+		[]rune{'D', 'L', 'V', 'T', 'M', 'H', 'F'},
+		[]rune{'H', 'Q', 'G', 'J', 'C', 'T', 'N', 'P'},
+		[]rune{'R', 'S', 'D', 'M', 'P', 'H'},
+		[]rune{'L', 'B', 'V', 'F'},
+		[]rune{'N', 'H', 'G', 'L', 'Q'},
+		[]rune{'W', 'B', 'D', 'G', 'R', 'M', 'P'},
+		[]rune{'G', 'M', 'N', 'R', 'C', 'H', 'L', 'Q'},
+		[]rune{'C', 'L', 'W'},
+		[]rune{'R', 'D', 'L', 'Q', 'J', 'Z', 'M', 'T'},
 	}, nil
 }
+
+// test parse containers
+// func parseContainers() (Yard, error) {
+// 	return Yard{
+// 		[]rune{'Z', 'N'},
+// 		[]rune{'M', 'C', 'D'},
+// 		[]rune{'P'},
+// 	}, nil
+// }
