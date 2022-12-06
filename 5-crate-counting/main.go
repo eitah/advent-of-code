@@ -6,6 +6,7 @@ import (
 	"os"
 	"regexp"
 	"strconv"
+	"unicode"
 )
 
 func main() {
@@ -31,10 +32,13 @@ func mainErr() error {
 	defer readFile.Close()
 
 	fileScanner := bufio.NewScanner(readFile)
-
 	fileScanner.Split(bufio.ScanLines)
 
-	containers, err := parseContainers()
+	// the make syntax is nice here because I don't have to worry about an array not being declared when assigning to this
+	containers := make(Yard, 9)
+	for fileScanner.Scan() {
+		containers = parseContainers(containers, fileScanner.Text())
+	}
 
 	for fileScanner.Scan() {
 		cmd, err := moveLineToCommand(fileScanner.Text())
@@ -85,7 +89,7 @@ func moveOneCrateAtATime(containers Yard, cmd *MoveCommand) Yard {
 		z := containers[cmd.end-1]
 		z = append(z, topBox)
 
-		// todo could i have mutated containers somehow? to prevent needing reassignment?
+		// todo could i have mutated containers somehow? to prevent needing reassignment? do i want to?
 		containers[cmd.start-1] = a
 		containers[cmd.end-1] = z
 	}
@@ -93,8 +97,9 @@ func moveOneCrateAtATime(containers Yard, cmd *MoveCommand) Yard {
 	return containers
 }
 
+var moveLineParseRegex = regexp.MustCompile("^move (\\d+) from (\\d) to (\\d)")
+
 func moveLineToCommand(moveLine string) (*MoveCommand, error) {
-	moveLineParseRegex := regexp.MustCompile("^move (\\d+) from (\\d) to (\\d)")
 	result := moveLineParseRegex.FindAllStringSubmatch(moveLine, -1)
 	if result == nil {
 		return nil, fmt.Errorf("not a move command")
@@ -116,29 +121,39 @@ func unsafeStrToNum(str string) int {
 	return num
 }
 
-// func (y *Yard) performMoveCommand(cmd *MoveCommand) {
-// 	for i := 1; i <= cmd.numCrates; i++ {
-// 		indexStart := cmd.start - 1
-// 		a := y[indexStart]
-// 		topBox, remainder = a[len(a)-1], a[:len(a)-1]
-// 	}
-// }
+var isAContainerRowRx = regexp.MustCompile("\\[")
 
-// func pop()
+func parseContainers(yard Yard, text string) Yard {
+	if isAContainerRowRx.FindString(text) == "" {
+		return yard
+	}
+	fmt.Println(text)
+	for index, rn := range text {
+		if unicode.IsLetter(rn) {
+			indexInYard := (index - 1) / 4
+			// containers are added to the stack in reverse order to how they are printed in the file, this unshifts em
+			yard[indexInYard] = append(CrateStack{rn}, yard[indexInYard]...)
+			fmt.Println(string(rn), index-1)
+		}
+	}
 
-func parseContainers() (Yard, error) {
-	return Yard{
-		[]rune{'D', 'L', 'V', 'T', 'M', 'H', 'F'},
-		[]rune{'H', 'Q', 'G', 'J', 'C', 'T', 'N', 'P'},
-		[]rune{'R', 'S', 'D', 'M', 'P', 'H'},
-		[]rune{'L', 'B', 'V', 'F'},
-		[]rune{'N', 'H', 'G', 'L', 'Q'},
-		[]rune{'W', 'B', 'D', 'G', 'R', 'M', 'P'},
-		[]rune{'G', 'M', 'N', 'R', 'C', 'H', 'L', 'Q'},
-		[]rune{'C', 'L', 'W'},
-		[]rune{'R', 'D', 'L', 'Q', 'J', 'Z', 'M', 'T'},
-	}, nil
+	return yard
 }
+
+// this is what the hardcoded list of crates looked like before I parsed em
+// func parseContainers() (Yard, error) {
+// 	return Yard{
+// 		[]rune{'D', 'L', 'V', 'T', 'M', 'H', 'F'},
+// 		[]rune{'H', 'Q', 'G', 'J', 'C', 'T', 'N', 'P'},
+// 		[]rune{'R', 'S', 'D', 'M', 'P', 'H'},
+// 		[]rune{'L', 'B', 'V', 'F'},
+// 		[]rune{'N', 'H', 'G', 'L', 'Q'},
+// 		[]rune{'W', 'B', 'D', 'G', 'R', 'M', 'P'},
+// 		[]rune{'G', 'M', 'N', 'R', 'C', 'H', 'L', 'Q'},
+// 		[]rune{'C', 'L', 'W'},
+// 		[]rune{'R', 'D', 'L', 'Q', 'J', 'Z', 'M', 'T'},
+// 	}, nil
+// }
 
 // test parse containers
 // func parseContainers() (Yard, error) {
@@ -148,3 +163,4 @@ func parseContainers() (Yard, error) {
 // 		[]rune{'P'},
 // 	}, nil
 // }
+// end hardcoded list
