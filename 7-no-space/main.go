@@ -47,7 +47,7 @@ func mainErr() error {
 			case "cd":
 				mode = "cd"
 				if parts[2] == ".." {
-					_, abs = unsafeUp(abs)
+					abs = up(abs)
 				} else {
 					if abs == "" {
 						abs = "/"
@@ -147,23 +147,12 @@ func sum(tree map[string]Dir) map[string]int {
 	return finished
 }
 
-// todo i dont actually use working dir is it needed?
+// todo i dont actually use working dir is it needed? i cut it!
 // up returns the new working direcory as well as the new absolute path
-func unsafeUp(pwd string) (rune, string) {
-	var newdir rune
+func up(pwd string) string {
 	parts := strings.Split(pwd, ".")
 	_, parts = parts[len(parts)-1], parts[:len(parts)-1]
-	runearray := []rune(parts[len(parts)-1])
-	if len(runearray) == 0 {
-		newdir = '/'
-	}
-	if len(runearray) == 1 {
-		newdir = runearray[0]
-	}
-	if len(runearray) > 1 {
-		panic(fmt.Sprintf("assumed newdir would always be a single rune, recieved len(%d): %v", len(runearray), runearray))
-	}
-	return newdir, strings.Join(parts, ".")
+	return strings.Join(parts, ".")
 }
 
 // // perform cd accepts a directory and returns a new pwd
