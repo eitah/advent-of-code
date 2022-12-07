@@ -97,6 +97,35 @@ func mainErr() error {
 
 	sizes := sum(tree)
 
+	// answerPart1(sizes)
+	answerPart2(sizes)
+	return nil
+}
+
+func answerPart2(sizes map[string]int) {
+	totalspace := 70000000
+	requiredspace := 30000000
+	remainingspace := totalspace - requiredspace
+
+	overage := sizes["/"] - remainingspace
+
+	var name string
+	currentsmallest := 70000000 // initialize currently smallest with total spce since we know no file system will ever be larger than the total
+	for nm, size := range sizes {
+		if size > overage && size < currentsmallest {
+			currentsmallest = size
+			name = nm
+		}
+	}
+
+	fmt.Println(sizes)
+
+	fmt.Println(len(sizes))
+	fmt.Println(name)
+	fmt.Println(currentsmallest)
+}
+
+func answerPart1(sizes map[string]int) {
 	var final int
 	cutoff := 100000
 	for _, size := range sizes {
@@ -107,7 +136,6 @@ func mainErr() error {
 
 	spew.Dump(sizes)
 	spew.Dump("final is", final)
-	return nil
 }
 
 func sum(tree map[string]Dir) map[string]int {
