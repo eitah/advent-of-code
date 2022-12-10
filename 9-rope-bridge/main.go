@@ -46,20 +46,42 @@ func mainErr() error {
 	// visited := make()
 	var path = []Point{}
 
+	// state := struct {
+	// 	head Point
+	// 	tail Point
+	// }{
+	// 	head: Point{0, 0},
+	// 	tail: Point{0, 0},
+	// }
+
 	visited := map[Point]int{{0, 0}: 1}
-	state := struct {
-		head Point
-		tail Point
-	}{
-		head: Point{0, 0},
-		tail: Point{0, 0},
-	}
-	for _, pull := range headInstructions {
-		for _, move := range pull {
-			state.head = add(state.head, move)
-			state.tail = calculateTug(state.tail, state.head)
-			visited[state.tail] = 1
-			path = append(path, state.tail)
+	lenSnake := 10
+	state := make(map[int]Point, lenSnake)
+	for idx, pull := range headInstructions {
+		fmt.Printf("Head instruction %d (len %d)\n", idx, len(pull))
+		// spew.Dump(state)
+
+		for pullIdx, move := range pull {
+			head := 0
+			state[head] = add(state[head], move)
+			for n := 1; n < lenSnake; n++ {
+				// each snake is pulled by the one just in front of it
+				// if n == 8 {
+				// fmt.Println("before", state[n], state[n-1])
+				// }
+				state[n] = calculateTug(state[n], state[n-1])
+				if n == 8 {
+					// fmt.Println("after", state[n], state[n-1])
+				}
+				if n == lenSnake-1 {
+					visited[state[n]] = 1
+					// path = append(path, state[n])
+					if pullIdx == len(headInstructions)-1 {
+						// fmt.Println(n)
+						path = append(path, state[n])
+					}
+				}
+			}
 		}
 	}
 
@@ -78,53 +100,23 @@ func calculateTug(tail, head Point) Point {
 
 	tug := Point{0, 0}
 	if diffX == 2 {
-		// if diffY == 1 || diffY == -1 {
-		// 	tug = Point{1, diffY}
-		// } else {
-		// tug = Point{1, 0}
-		// }
+		// i figured this out trial and error, but proud to say that
+		// if there is a tug you also need to take into account which
+		// pull the other point has
 		tug = Point{1, diffY}
 	}
 	if diffX == -2 {
-		// if diffY == -1 {
-		// 	tug = Point{-1, -1}
-		// } else {
-		// 	tug = Point{-1, 0}
-		// }
 		tug = Point{-1, diffY}
 	}
 	if diffY == 2 {
-		// if diffX == 1 {
-		// 	tug = Point{1, 1}
-		// } else {
-		// 	tug = Point{0, 1}
-		// }
 		tug = Point{diffX, 1}
 	}
 	if diffY == -2 {
-		// if diffX == -1 {
-		// 	tug = Point{-1, -1}
-		// } else {
-		// 	tug = Point{0, -1}
-		// }
 		tug = Point{diffX, -1}
 	}
 
 	return add(tail, tug)
 }
-
-// tried to do this in a very declarative way but it stinks
-// func moveTail(tail, head Point) Point {
-// 	newMove := Point{0, 0}
-// 	if head.x-tail.x > 1 && head.y-tail.y > 1 {
-// 		newMove =
-// 	}
-// 	if head.x-tail.x > 1 {
-// 		newMove = Point{1, 0}
-// 	} else if tail.x-head.x > 1 {
-// 		newMove = Point{-1, 0}
-// 	}
-// }
 
 func add(a, b Point) Point {
 	return Point{a.x + b.x, a.y + b.y}
