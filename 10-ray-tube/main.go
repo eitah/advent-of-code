@@ -58,7 +58,7 @@ scanner:
 		for _, round := range statusCheckRounds {
 			if cycles == round {
 				// if we got lucky and hit it exactly, just report x
-				fmt.Printf("c == r condtion:  %d: X is %d\n", cycles, x)
+				// fmt.Printf("c == r condtion:  %d: X is %d\n", cycles, prevValueX)
 				answers = append(answers, Answer{cycles, prevValueX})
 
 				continue scanner
