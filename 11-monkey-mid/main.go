@@ -9,10 +9,10 @@ import (
 	"github.com/davecgh/go-spew/spew"
 )
 
-type Fearfunc func(old int) int
-type NextMonkey func(worry int) int
+type Fearfunc func(old int64) int64
+type NextMonkey func(worry int64) int
 type Monkey struct {
-	items     []int
+	items     []int64
 	operation Fearfunc
 	test      NextMonkey
 	inspected int
@@ -26,8 +26,10 @@ func main() {
 
 func mainErr() error {
 	monkeys := get()
-	for n := 0; n < 20; n++ {
-		monkeys = doRound(monkeys)
+	// for n := 0; n < 20; n++ {
+	for n := 0; n < 10000; n++ {
+		round2 := true
+		monkeys = doRound(monkeys, round2)
 	}
 
 	var inspected []int
@@ -44,22 +46,24 @@ func mainErr() error {
 	return nil
 }
 
-func doRound(monkeys []*Monkey) []*Monkey {
+func doRound(monkeys []*Monkey, round2 bool) []*Monkey {
 	for n := 0; n < len(monkeys); n++ {
 		monkey := monkeys[n]
 
 		var idx int
 		for idx < len(monkey.items) {
-			var item int
-			var remainder []int
+			var item int64
+			var remainder []int64
 			if len(monkey.items) == 1 {
-				item, remainder = monkey.items[idx], []int{}
+				item, remainder = monkey.items[idx], []int64{}
 			} else {
 				item, remainder = monkey.items[idx], monkey.items[idx+1:]
 			}
 			newworry := monkey.operation(item) // fear spike
-			newworry = newworry / 3            // relief
-			next := monkey.test(newworry)      // determine next monkey
+			if !round2 {
+				newworry = newworry / 3 // relief
+			}
+			next := monkey.test(newworry) // determine next monkey
 			monkey.items = remainder
 			monkeys[next].items = append(monkeys[next].items, newworry)
 			monkey.inspected++
@@ -70,9 +74,9 @@ func doRound(monkeys []*Monkey) []*Monkey {
 
 func get() []*Monkey {
 	monkey0 := &Monkey{
-		items:     []int{64},
-		operation: func(old int) int { return old * 7 },
-		test: func(worry int) int {
+		items:     []int64{64},
+		operation: func(old int64) int64 { return old * 7 },
+		test: func(worry int64) int {
 			if worry%13 == 0 {
 				return 1
 			}
@@ -81,9 +85,9 @@ func get() []*Monkey {
 	}
 
 	monkey1 := &Monkey{
-		items:     []int{60, 84, 84, 65},
-		operation: func(old int) int { return old + 7 },
-		test: func(worry int) int {
+		items:     []int64{60, 84, 84, 65},
+		operation: func(old int64) int64 { return old + 7 },
+		test: func(worry int64) int {
 			if worry%19 == 0 {
 				return 2
 			}
@@ -92,9 +96,9 @@ func get() []*Monkey {
 	}
 
 	monkey2 := &Monkey{
-		items:     []int{52, 67, 74, 88, 51, 61},
-		operation: func(old int) int { return old * 3 },
-		test: func(worry int) int {
+		items:     []int64{52, 67, 74, 88, 51, 61},
+		operation: func(old int64) int64 { return old * 3 },
+		test: func(worry int64) int {
 			if worry%5 == 0 {
 				return 5
 			}
@@ -103,9 +107,9 @@ func get() []*Monkey {
 	}
 
 	monkey3 := &Monkey{
-		items:     []int{67, 72},
-		operation: func(old int) int { return old + 3 },
-		test: func(worry int) int {
+		items:     []int64{67, 72},
+		operation: func(old int64) int64 { return old + 3 },
+		test: func(worry int64) int {
 			if worry%2 == 0 {
 				return 1
 			}
@@ -114,9 +118,9 @@ func get() []*Monkey {
 	}
 
 	monkey4 := &Monkey{
-		items:     []int{80, 79, 58, 77, 68, 74, 98, 64},
-		operation: func(old int) int { return old * old },
-		test: func(worry int) int {
+		items:     []int64{80, 79, 58, 77, 68, 74, 98, 64},
+		operation: func(old int64) int64 { return old * old },
+		test: func(worry int64) int {
 			if worry%17 == 0 {
 				return 6
 			}
@@ -125,9 +129,9 @@ func get() []*Monkey {
 	}
 
 	monkey5 := &Monkey{
-		items:     []int{62, 53, 61, 89, 86},
-		operation: func(old int) int { return old + 8 },
-		test: func(worry int) int {
+		items:     []int64{62, 53, 61, 89, 86},
+		operation: func(old int64) int64 { return old + 8 },
+		test: func(worry int64) int {
 			if worry%11 == 0 {
 				return 4
 			}
@@ -136,9 +140,9 @@ func get() []*Monkey {
 	}
 
 	monkey6 := &Monkey{
-		items:     []int{86, 89, 82},
-		operation: func(old int) int { return old + 2 },
-		test: func(worry int) int {
+		items:     []int64{86, 89, 82},
+		operation: func(old int64) int64 { return old + 2 },
+		test: func(worry int64) int {
 			if worry%7 == 0 {
 				return 3
 			}
@@ -147,9 +151,9 @@ func get() []*Monkey {
 	}
 
 	monkey7 := &Monkey{
-		items:     []int{92, 81, 70, 96, 69, 84, 83},
-		operation: func(old int) int { return old + 4 },
-		test: func(worry int) int {
+		items:     []int64{92, 81, 70, 96, 69, 84, 83},
+		operation: func(old int64) int64 { return old + 4 },
+		test: func(worry int64) int {
 			if worry%3 == 0 {
 				return 4
 			}
