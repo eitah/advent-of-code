@@ -43,15 +43,43 @@ func mainErr() error {
 		commands: commands,
 	}
 
+	var row []string
+	screen := make([][]string, 6)
 	var answers []Answer
-	for cycle := 1; cycle <= 220; cycle++ {
-		if (cycle-20)%40 == 0 {
-			a := Answer{
-				cycles: cycle,
-				x:      crt.x,
+	var pixel string
+	// wrap := []int{40, 80, 120, 160, 200, 240, 280}
+
+	for cycle := 1; cycle <= 240; cycle++ {
+		// report state - for part 1
+		// if (cycle-20)%40 == 0 {
+		// 	a := Answer{
+		// 		cycles: cycle,
+		// 		x:      crt.x,
+		// 	}
+		// 	answers = append(answers, a)
+		// }
+
+		var activerow int
+		for idx, row := range screen {
+			if len(row) < 40 {
+				activerow = idx
+				break
+			} else {
+				activerow++
 			}
-			answers = append(answers, a)
 		}
+		//
+		spriteStart := crt.x - 1
+		spriteEnd := crt.x + 1
+
+		cursorpos := cycle - activerow*40 - 1
+		if cursorpos >= spriteStart && cursorpos <= spriteEnd {
+			pixel = "#"
+		} else {
+			pixel = "."
+		}
+
+		screen[activerow] = append(screen[activerow], pixel)
 
 		if err := crt.updateState(cycle); err != nil {
 			return fmt.Errorf("something blew up: %w", err)
@@ -59,14 +87,18 @@ func mainErr() error {
 	}
 
 	var total int
-	spew.Dump(answers)
+	spew.Dump(row)
 	for _, ans := range answers {
 		partial := ans.cycles * ans.x
 		total += partial
 		spew.Printf("%d * %d = %d\n", ans.cycles, ans.x, partial)
 	}
 
-	spew.Dump(total)
+	// spew.Dump(total)
+	for _, row := range screen {
+		fmt.Println(row)
+
+	}
 
 	return nil
 }
