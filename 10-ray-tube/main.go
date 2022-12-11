@@ -23,66 +23,43 @@ type Answer struct {
 	x      int
 }
 
-var answers []Answer
-
 func mainErr() error {
-	readFile, err := os.Open("ray-tube.txt")
+	fs, err := makeFs("ray-tube.txt")
 	if err != nil {
 		return err
 	}
 
-	fileScanner := bufio.NewScanner(readFile)
-	fileScanner.Split(bufio.ScanLines)
+	// state := State{
+	// 	x: 1,
+	// }
 
-	var cycles int
-	x := 1
+	var commands []string
+	for fs.Scan() {
+		commands = append(commands, fs.Text())
+	}
 
-scanner:
-	for fileScanner.Scan() {
-		parts := strings.Split(fileScanner.Text(), " ")
+	crt := CRT{
+		x:        1,
+		commands: commands,
+	}
 
-		if parts[0] == "noop" {
-			cycles++
+	var answers []Answer
+	for cycle := 1; cycle <= 220; cycle++ {
+		if (cycle-20)%40 == 0 {
+			a := Answer{
+				cycles: cycle,
+				x:      crt.x,
+			}
+			answers = append(answers, a)
 		}
 
-		prevValueX := x
-		if parts[0] == "addx" {
-			cycles = cycles + 2
-			x = x + unsafeStrToNum(parts[1])
-		}
-
-		if cycles == 218 || cycles == 219 || cycles == 220 {
-			fmt.Printf("cycles %d: %d > %d\n", cycles, prevValueX, x)
-		}
-
-		for _, round := range statusCheckRounds {
-			if cycles == round {
-				// if we got lucky and hit it exactly, just report x
-				// fmt.Printf("c == r condtion:  %d: X is %d\n", cycles, prevValueX)
-				answers = append(answers, Answer{cycles, prevValueX})
-
-				continue scanner
-			}
-			// if we missed by 1, report prev value of x
-			if cycles == round+1 {
-				if hasAlreadyReportedThis(answers, round) {
-					continue scanner
-				}
-
-				answers = append(answers, Answer{cycles - 1, prevValueX})
-
-				// fmt.Printf("cycle %d: X is %d\n", cycles, prevValueX)
-				continue scanner
-			}
-
-			if cycles == round+2 {
-				fmt.Println("c == r + 1 condition: Cycles is %d", cycles)
-			}
+		if err := crt.updateState(cycle); err != nil {
+			return fmt.Errorf("something blew up: %w", err)
 		}
 	}
 
 	var total int
-	// spew.Dump(answers)
+	spew.Dump(answers)
 	for _, ans := range answers {
 		partial := ans.cycles * ans.x
 		total += partial
@@ -90,6 +67,88 @@ scanner:
 	}
 
 	spew.Dump(total)
+
+	return nil
+}
+
+func (c *CRT) updateState(cycle int) error {
+	if c.pendingExecution != "" {
+		c.x = c.x + unsafeStrToNum(c.pendingExecution)
+		c.pendingExecution = ""
+		return nil
+	}
+
+	cmd, remainder := c.commands[0], c.commands[1:]
+	c.commands = remainder
+	incoming := strings.Split(cmd, " ")
+
+	if incoming[0] == "noop" {
+		// do nothing!
+	}
+
+	if incoming[0] == "addx" {
+		c.pendingExecution = incoming[1]
+	}
+
+	return nil
+}
+
+type CRT struct {
+	commands []string
+	cycle    int
+
+	pendingExecution string
+	x                int
+	crtPosition      int
+
+	answers []Answer
+}
+
+type State struct {
+	incoming []string
+	cycle    int
+
+	pendingExecution string
+	x                int
+	crtPosition      int
+
+	answers []Answer
+}
+
+// for _, cmd := range commands {
+// 	if err := state.updateState(c); err != nil {
+// 		return fmt.Errorf("Something blew up: %w", err)
+// 	}
+// }
+
+func (s *State) updateState(cmd string) error {
+	s.incoming = strings.Split(cmd, " ")
+	s.cycle += 1
+
+	if s.pendingExecution != "" {
+		s.x = s.x + unsafeStrToNum(s.pendingExecution)
+		s.pendingExecution = ""
+	}
+
+	for _, round := range statusCheckRounds {
+		if s.cycle == round {
+			// if s.cycle == 20 || (s.cycle-20)%40 == 0 {
+			fmt.Printf("cycle is %d\nx is %d\npending %s\n", s.cycle, s.x, s.pendingExecution)
+			a := Answer{
+				cycles: s.cycle,
+				x:      s.x,
+			}
+			s.answers = append(s.answers, a)
+		}
+	}
+
+	if s.incoming[0] == "noop" {
+		return nil
+	}
+
+	if s.incoming[0] == "addx" {
+		s.pendingExecution = s.incoming[1]
+	}
 
 	return nil
 }
@@ -102,6 +161,18 @@ func hasAlreadyReportedThis(answer []Answer, cycle int) bool {
 	}
 
 	return false
+}
+
+func makeFs(filename string) (*bufio.Scanner, error) {
+	readFile, err := os.Open(filename)
+	if err != nil {
+		return nil, err
+	}
+
+	fileScanner := bufio.NewScanner(readFile)
+	fileScanner.Split(bufio.ScanLines)
+
+	return fileScanner, nil
 }
 
 func unsafeStrToNum(str string) int {
