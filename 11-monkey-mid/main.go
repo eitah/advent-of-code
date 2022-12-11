@@ -25,56 +25,7 @@ func main() {
 }
 
 func mainErr() error {
-	// fs, err := makeFs("monkey-mid.txt")
-	// if err != nil {
-	// 	return err
-	// }
-
-	monkey0 := &Monkey{
-		items:     []int{79, 98},
-		operation: func(old int) int { return old * 19 },
-		test: func(worry int) int {
-			if worry%23 == 0 {
-				return 2
-			}
-			return 3
-		},
-	}
-
-	monkey1 := &Monkey{
-		items:     []int{54, 65, 75, 74},
-		operation: func(old int) int { return old + 6 },
-		test: func(worry int) int {
-			if worry%19 == 0 {
-				return 2
-			}
-			return 0
-		},
-	}
-
-	monkey2 := &Monkey{
-		items:     []int{79, 60, 97},
-		operation: func(old int) int { return old * old },
-		test: func(worry int) int {
-			if worry%13 == 0 {
-				return 1
-			}
-			return 3
-		},
-	}
-
-	monkey3 := &Monkey{
-		items:     []int{74},
-		operation: func(old int) int { return old + 3 },
-		test: func(worry int) int {
-			if worry%17 == 0 {
-				return 0
-			}
-			return 1
-		},
-	}
-
-	monkeys := []*Monkey{monkey0, monkey1, monkey2, monkey3}
+	monkeys := get()
 	for n := 0; n < 20; n++ {
 		monkeys = doRound(monkeys)
 	}
@@ -116,6 +67,106 @@ func doRound(monkeys []*Monkey) []*Monkey {
 	}
 	return monkeys
 }
+
+func get() []*Monkey {
+	monkey0 := &Monkey{
+		items:     []int{64},
+		operation: func(old int) int { return old * 7 },
+		test: func(worry int) int {
+			if worry%13 == 0 {
+				return 1
+			}
+			return 3
+		},
+	}
+
+	monkey1 := &Monkey{
+		items:     []int{60, 84, 84, 65},
+		operation: func(old int) int { return old + 7 },
+		test: func(worry int) int {
+			if worry%19 == 0 {
+				return 2
+			}
+			return 7
+		},
+	}
+
+	monkey2 := &Monkey{
+		items:     []int{52, 67, 74, 88, 51, 61},
+		operation: func(old int) int { return old * 3 },
+		test: func(worry int) int {
+			if worry%5 == 0 {
+				return 5
+			}
+			return 7
+		},
+	}
+
+	monkey3 := &Monkey{
+		items:     []int{67, 72},
+		operation: func(old int) int { return old + 3 },
+		test: func(worry int) int {
+			if worry%2 == 0 {
+				return 1
+			}
+			return 2
+		},
+	}
+
+	monkey4 := &Monkey{
+		items:     []int{80, 79, 58, 77, 68, 74, 98, 64},
+		operation: func(old int) int { return old * old },
+		test: func(worry int) int {
+			if worry%17 == 0 {
+				return 6
+			}
+			return 0
+		},
+	}
+
+	monkey5 := &Monkey{
+		items:     []int{62, 53, 61, 89, 86},
+		operation: func(old int) int { return old + 8 },
+		test: func(worry int) int {
+			if worry%11 == 0 {
+				return 4
+			}
+			return 6
+		},
+	}
+
+	monkey6 := &Monkey{
+		items:     []int{86, 89, 82},
+		operation: func(old int) int { return old + 2 },
+		test: func(worry int) int {
+			if worry%7 == 0 {
+				return 3
+			}
+			return 0
+		},
+	}
+
+	monkey7 := &Monkey{
+		items:     []int{92, 81, 70, 96, 69, 84, 83},
+		operation: func(old int) int { return old + 4 },
+		test: func(worry int) int {
+			if worry%3 == 0 {
+				return 4
+			}
+			return 5
+		},
+	}
+
+	return []*Monkey{monkey0, monkey1, monkey2, monkey3, monkey4, monkey5, monkey6, monkey7}
+}
+
+// func get() []*Monkey {
+// 	var monkeys []*Monkey
+
+// 	// here was where i was gonna yaml parse but i got lazy.
+
+// 	return monkeys
+// }
 
 func makeFs(filename string) (*bufio.Scanner, error) {
 	readFile, err := os.Open(filename)
