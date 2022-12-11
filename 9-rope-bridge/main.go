@@ -55,34 +55,55 @@ func mainErr() error {
 	// }
 
 	visited := map[Point]int{{0, 0}: 1}
+	// lenSnake := 10
 	lenSnake := 10
 	state := make(map[int]Point, lenSnake)
+	// spew.Dump(state)
+	// for idx, pull := range headInstructions {
+
 	for idx, pull := range headInstructions {
-		fmt.Printf("Head instruction %d (len %d)\n", idx, len(pull))
 		// spew.Dump(state)
 
-		for pullIdx, move := range pull {
-			head := 0
-			state[head] = add(state[head], move)
-			for n := 1; n < lenSnake; n++ {
+		for pulln, move := range pull {
+			for n := 0; n < lenSnake; n++ {
 				// each snake is pulled by the one just in front of it
-				// if n == 8 {
-				// fmt.Println("before", state[n], state[n-1])
-				// }
-				state[n] = calculateTug(state[n], state[n-1])
-				if n == 8 {
-					// fmt.Println("after", state[n], state[n-1])
+				// b := state[n]
+				if n == 0 {
+					state[0] = add(state[0], move)
+				} else {
+					state[n] = calculateTug(state[n], state[n-1])
 				}
+				a := state[n]
+
 				if n == lenSnake-1 {
+					// if idx == 1 {
+					// fmt.Printf("%d: %v -> %v\n", idx, b, a)
+
 					visited[state[n]] = 1
 					// path = append(path, state[n])
-					if pullIdx == len(headInstructions)-1 {
+					if idx == len(headInstructions)-1 {
 						// fmt.Println(n)
 						path = append(path, state[n])
 					}
 				}
+
+				// if idx == 1 && pulln == len(pull)-1 {
+				// 	fmt.Printf("cmd %d, seg (%d) is at (x: %d, y %d)\n", len(pull), n, a.x, a.y)
+				// }
+				fmt.Sprint(pulln)
+
+				if n == 6 && idx == 1 {
+					fmt.Printf("cmd %d, seg (%d) is at (x: %d, y %d)\n", len(pull), n, a.x, a.y)
+				}
+				// if n == lenSnake-1 && pullidx == len(pull)-1 {
+				// 	fmt.Printf("Num %d: (cmd %d, seg %d): %v -> %v\n", idx, len(pull), n, b, a)
+
+				// }
+
 			}
+			// fmt.Println()
 		}
+		fmt.Println()
 	}
 
 	// spew.Dump(state)
