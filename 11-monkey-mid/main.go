@@ -79,9 +79,11 @@ func doRound(monkeys []*Monkey, round2 bool) []*Monkey {
 			}
 			newworry := monkey.operation(item) // fear spike
 			if round2 {
-				newworry = newworry.Mod(newworry, big.NewInt(SUPERMODULUS))
-				spew.Dump(item)
-				spew.Dump(newworry)
+				if newworry.Cmp(big.NewInt(SUPERMODULUS)) == -1 {
+					// spew.Dump(item, SUPERMODULUS)
+					// spew.Dump(newworry)
+					newworry = newworry.Mod(newworry, big.NewInt(SUPERMODULUS))
+				}
 			} else {
 				newworry = newworry.Div(newworry, big.NewInt(3)) // relief
 			}
