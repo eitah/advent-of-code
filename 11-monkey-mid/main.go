@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"math/big"
 	"os"
 	"sort"
 	"strconv"
@@ -9,10 +10,10 @@ import (
 	"github.com/davecgh/go-spew/spew"
 )
 
-type Fearfunc func(old int64) int64
-type NextMonkey func(worry int64) int
+type Fearfunc func(old *big.Int) *big.Int
+type NextMonkey func(worry *big.Int) int
 type Monkey struct {
-	items     []int64
+	items     []*big.Int
 	operation Fearfunc
 	test      NextMonkey
 	inspected int
@@ -52,16 +53,16 @@ func doRound(monkeys []*Monkey, round2 bool) []*Monkey {
 
 		var idx int
 		for idx < len(monkey.items) {
-			var item int64
-			var remainder []int64
+			var item *big.Int
+			var remainder []*big.Int
 			if len(monkey.items) == 1 {
-				item, remainder = monkey.items[idx], []int64{}
+				item, remainder = monkey.items[idx], []*big.Int{}
 			} else {
 				item, remainder = monkey.items[idx], monkey.items[idx+1:]
 			}
 			newworry := monkey.operation(item) // fear spike
 			if !round2 {
-				newworry = newworry / 3 // relief
+				newworry = newworry.Div(newworry, big.NewInt(3)) // relief
 			}
 			next := monkey.test(newworry) // determine next monkey
 			monkey.items = remainder
@@ -74,10 +75,10 @@ func doRound(monkeys []*Monkey, round2 bool) []*Monkey {
 
 func get() []*Monkey {
 	monkey0 := &Monkey{
-		items:     []int64{64},
-		operation: func(old int64) int64 { return old * 7 },
-		test: func(worry int64) int {
-			if worry%13 == 0 {
+		items:     []*big.Int{big.NewInt(64)},
+		operation: func(old *big.Int) *big.Int { return old.Mul(old, big.NewInt(7)) },
+		test: func(worry *big.Int) int {
+			if worry.Mod(worry, big.NewInt(13)) == big.NewInt(0) {
 				return 1
 			}
 			return 3
@@ -85,10 +86,10 @@ func get() []*Monkey {
 	}
 
 	monkey1 := &Monkey{
-		items:     []int64{60, 84, 84, 65},
-		operation: func(old int64) int64 { return old + 7 },
-		test: func(worry int64) int {
-			if worry%19 == 0 {
+		items:     []*big.Int{big.NewInt(60), big.NewInt(84), big.NewInt(84), big.NewInt(65)},
+		operation: func(old *big.Int) *big.Int { return old.Add(old, big.NewInt(7)) },
+		test: func(worry *big.Int) int {
+			if worry.Mod(worry, big.NewInt(19)) == big.NewInt(0) {
 				return 2
 			}
 			return 7
@@ -96,10 +97,10 @@ func get() []*Monkey {
 	}
 
 	monkey2 := &Monkey{
-		items:     []int64{52, 67, 74, 88, 51, 61},
-		operation: func(old int64) int64 { return old * 3 },
-		test: func(worry int64) int {
-			if worry%5 == 0 {
+		items:     []*big.Int{big.NewInt(52), big.NewInt(67), big.NewInt(74), big.NewInt(88), big.NewInt(51), big.NewInt(61)},
+		operation: func(old *big.Int) *big.Int { return old.Mul(old, big.NewInt(3)) },
+		test: func(worry *big.Int) int {
+			if worry.Mod(worry, big.NewInt(5)) == big.NewInt(0) {
 				return 5
 			}
 			return 7
@@ -107,10 +108,10 @@ func get() []*Monkey {
 	}
 
 	monkey3 := &Monkey{
-		items:     []int64{67, 72},
-		operation: func(old int64) int64 { return old + 3 },
-		test: func(worry int64) int {
-			if worry%2 == 0 {
+		items:     []*big.Int{big.NewInt(67), big.NewInt(72)},
+		operation: func(old *big.Int) *big.Int { return old.Add(old, big.NewInt(3)) },
+		test: func(worry *big.Int) int {
+			if worry.Mod(worry, big.NewInt(2)) == big.NewInt(0) {
 				return 1
 			}
 			return 2
@@ -118,10 +119,10 @@ func get() []*Monkey {
 	}
 
 	monkey4 := &Monkey{
-		items:     []int64{80, 79, 58, 77, 68, 74, 98, 64},
-		operation: func(old int64) int64 { return old * old },
-		test: func(worry int64) int {
-			if worry%17 == 0 {
+		items:     []*big.Int{big.NewInt(80), big.NewInt(79), big.NewInt(58), big.NewInt(77), big.NewInt(68), big.NewInt(74), big.NewInt(98), big.NewInt(64)},
+		operation: func(old *big.Int) *big.Int { return old.Mul(old, old) },
+		test: func(worry *big.Int) int {
+			if worry.Mod(worry, big.NewInt(17)) == big.NewInt(0) {
 				return 6
 			}
 			return 0
@@ -129,10 +130,10 @@ func get() []*Monkey {
 	}
 
 	monkey5 := &Monkey{
-		items:     []int64{62, 53, 61, 89, 86},
-		operation: func(old int64) int64 { return old + 8 },
-		test: func(worry int64) int {
-			if worry%11 == 0 {
+		items:     []*big.Int{big.NewInt(62), big.NewInt(53), big.NewInt(61), big.NewInt(89), big.NewInt(86)},
+		operation: func(old *big.Int) *big.Int { return old.Add(old, big.NewInt(8)) },
+		test: func(worry *big.Int) int {
+			if worry.Mod(worry, big.NewInt(11)) == big.NewInt(0) {
 				return 4
 			}
 			return 6
@@ -140,10 +141,10 @@ func get() []*Monkey {
 	}
 
 	monkey6 := &Monkey{
-		items:     []int64{86, 89, 82},
-		operation: func(old int64) int64 { return old + 2 },
-		test: func(worry int64) int {
-			if worry%7 == 0 {
+		items:     []*big.Int{big.NewInt(86), big.NewInt(89), big.NewInt(82)},
+		operation: func(old *big.Int) *big.Int { return old.Add(old, big.NewInt(2)) },
+		test: func(worry *big.Int) int {
+			if worry.Mod(worry, big.NewInt(7)) == big.NewInt(0) {
 				return 3
 			}
 			return 0
@@ -151,10 +152,11 @@ func get() []*Monkey {
 	}
 
 	monkey7 := &Monkey{
-		items:     []int64{92, 81, 70, 96, 69, 84, 83},
-		operation: func(old int64) int64 { return old + 4 },
-		test: func(worry int64) int {
-			if worry%3 == 0 {
+		items: []*big.Int{big.NewInt(92), big.NewInt(81), big.NewInt(70),
+			big.NewInt(96), big.NewInt(69), big.NewInt(84), big.NewInt(83)},
+		operation: func(old *big.Int) *big.Int { return old.Add(old, big.NewInt(4)) },
+		test: func(worry *big.Int) int {
+			if worry.Mod(worry, big.NewInt(3)) == big.NewInt(0) {
 				return 4
 			}
 			return 5
