@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"fmt"
 	"math/big"
 	"os"
 	"sort"
@@ -17,6 +18,7 @@ type Monkey struct {
 	operation Fearfunc
 	test      NextMonkey
 	inspected int
+	divisor   int64
 }
 
 func main() {
@@ -31,6 +33,13 @@ func mainErr() error {
 	for n := 0; n < 10000; n++ {
 		round2 := true
 		monkeys = doRound(monkeys, round2)
+
+		if n == 999 {
+			for _, m := range monkeys {
+				fmt.Printf("%v\n", m.inspected)
+
+			}
+		}
 	}
 
 	var inspected []int
@@ -48,6 +57,14 @@ func mainErr() error {
 }
 
 func doRound(monkeys []*Monkey, round2 bool) []*Monkey {
+	var SUPERMODULUS int64
+	if round2 {
+
+		for _, mon := range monkeys {
+			fmt.Println(mon.divisor)
+			SUPERMODULUS *= mon.divisor
+		}
+	}
 	for n := 0; n < len(monkeys); n++ {
 		monkey := monkeys[n]
 
@@ -61,7 +78,11 @@ func doRound(monkeys []*Monkey, round2 bool) []*Monkey {
 				item, remainder = monkey.items[idx], monkey.items[idx+1:]
 			}
 			newworry := monkey.operation(item) // fear spike
-			if !round2 {
+			if round2 {
+				newworry = newworry.Mod(newworry, big.NewInt(SUPERMODULUS))
+				spew.Dump(item)
+				spew.Dump(newworry)
+			} else {
 				newworry = newworry.Div(newworry, big.NewInt(3)) // relief
 			}
 			next := monkey.test(newworry) // determine next monkey
@@ -84,15 +105,22 @@ type Input struct {
 
 func get() []*Monkey {
 	inp := []Input{
-		{[]int64{64}, "*", 7, 13, 1, 3},
-		{[]int64{60, 84, 84, 65}, "+", 7, 19, 2, 7},
-		{[]int64{52, 67, 74, 88, 51, 61}, "*", 3, 5, 5, 7},
-		{[]int64{67, 72}, "+", 3, 2, 1, 2},
-		{[]int64{80, 79, 58, 77, 68, 74, 98, 64}, "*", 0, 17, 6, 0},
-		{[]int64{62, 53, 61, 89, 86}, "+", 8, 11, 4, 6},
-		{[]int64{86, 89, 82}, "+", 2, 7, 3, 0},
-		{[]int64{92, 81, 70, 96, 69, 84, 83}, "+", 4, 3, 4, 5},
+		{[]int64{79, 98}, "*", 19, 23, 2, 3},
+		{[]int64{54, 65, 75, 74}, "+", 6, 19, 2, 0},
+		{[]int64{79, 60, 97}, "*", 0, 13, 1, 3},
+		{[]int64{74}, "+", 3, 17, 0, 1},
 	}
+
+	// inp := []Input{
+	// 	{[]int64{64}, "*", 7, 13, 1, 3},
+	// 	{[]int64{60, 84, 84, 65}, "+", 7, 19, 2, 7},
+	// 	{[]int64{52, 67, 74, 88, 51, 61}, "*", 3, 5, 5, 7},
+	// 	{[]int64{67, 72}, "+", 3, 2, 1, 2},
+	// 	{[]int64{80, 79, 58, 77, 68, 74, 98, 64}, "*", 0, 17, 6, 0},
+	// 	{[]int64{62, 53, 61, 89, 86}, "+", 8, 11, 4, 6},
+	// 	{[]int64{86, 89, 82}, "+", 2, 7, 3, 0},
+	// 	{[]int64{92, 81, 70, 96, 69, 84, 83}, "+", 4, 3, 4, 5},
+	// }
 
 	var mons []*Monkey
 	for _, item := range inp {
@@ -109,7 +137,8 @@ func make(in Input) *Monkey {
 	}
 
 	return &Monkey{
-		items: bi,
+		items:   bi,
+		divisor: in.test,
 		test: func(fear *big.Int) int {
 			if fear.Mod(fear, big.NewInt(in.test)) == big.NewInt(0) {
 				return in.iftrue
