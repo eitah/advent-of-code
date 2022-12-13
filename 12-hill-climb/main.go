@@ -72,6 +72,7 @@ func bfs(hills []*Hill) []*Hill {
 
 		fmt.Print("\ncurrent bfs path: ")
 		printPath(currentPath)
+		fmt.Printf("\n%d\n", len(currentPath))
 
 		currentHill := currentPath[len(currentPath)-1]
 		currentHill.visited = true
@@ -79,15 +80,15 @@ func bfs(hills []*Hill) []*Hill {
 		// search for every legal node connected to current
 		if currentHill.pos == end.pos {
 			fmt.Println("\nStop! in the name of love", len(currentPath))
+			fmt.Println("len" + string(len(q)))
 			return currentPath
 		}
 		for _, nextNode := range legalHills(hills, currentHill) {
 			if safeGetHill(currentPath, nextNode.pos) == nil {
+				nextNode.visited = true
 				// if you havent yet visited this hill
 				newPath := append(currentPath, nextNode)
 				q = append(q, newPath)
-			} else {
-				nextNode.visited = true
 			}
 		}
 	}
@@ -97,7 +98,8 @@ func bfs(hills []*Hill) []*Hill {
 
 func printPath(hills []*Hill) {
 	for _, h := range hills {
-		fmt.Printf("%s", string(h.rn))
+		// fmt.Printf("%s", string(h.rn))
+		fmt.Printf("%v", h.pos)
 	}
 }
 
