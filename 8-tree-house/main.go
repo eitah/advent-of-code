@@ -56,6 +56,7 @@ func mainErr() error {
 
 	// round 1
 	scoreRound1(treegrid)
+	// round 2
 	scoreRound2(treegrid)
 
 	return nil
