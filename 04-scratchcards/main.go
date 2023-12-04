@@ -20,8 +20,8 @@ func main() {
 type Elf []int64
 
 func mainErr() error {
-	readFile, err := os.Open("short.txt")
-	// readFile, err := os.Open("full.txt")
+	// readFile, err := os.Open("short.txt")
+	readFile, err := os.Open("full.txt")
 	if err != nil {
 		return err
 	}
@@ -74,26 +74,35 @@ func mainErr() error {
 	copies := make(map[int]int, len(games))
 	for _, g := range games {
 		copies[g.id] += 1
-		for idx, _ := range make([]int, g.matches) {
-			copies[g.id+idx+1] += 1
+		// for each copy that is in the copies object
+		for range make([]int, copies[g.id]) {
+			// score all of the matches and add a new copy
+			for idx := range make([]int, g.matches) {
+				copies[g.id+idx+1] += 1
+			}
 		}
 	}
 
-	spew.Dump(copies)
+	var sum int
+	for _, copyCount := range copies {
+		sum += copyCount
+	}
+
+	spew.Dump(sum)
 	// spew.Printf("total %d across %d games\n", sum, len(games))
 
 	return nil
 }
 
 type Game struct {
-	points  int
+	// points  int
 	matches int
 	id      int
 	guesses []int
 	wins    []int
 }
 
-var regexWhitespace = regexp.MustCompile("\\W+")
+var regexWhitespace = regexp.MustCompile(`\W+`)
 
 func splitLine(gameNumber int, line string) *Game {
 	line = strings.Split(line, ":")[1]
