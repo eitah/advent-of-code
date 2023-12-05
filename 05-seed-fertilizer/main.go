@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+	"slices"
 	"strconv"
 	"strings"
 )
@@ -41,6 +42,7 @@ func mainErr() error {
 	instructionNumber := 0
 	for idx, line := range input {
 		if idx == 0 {
+			// part1
 			s := strings.Split(line, ":")[1]
 			seedArray := strings.Split(s, " ")
 			for _, txt := range seedArray {
@@ -48,6 +50,30 @@ func mainErr() error {
 					seeds = append(seeds, unsafeStringToNumber(txt))
 				}
 			}
+
+			// mutate the seeds array to have the right ranges in it
+			// this is such a hack no wonder (in part) it memory leaks
+			part2 := true
+			if part2 {
+				seedRanges := []int{}
+				seedStart := []int{}
+				for idx, seed := range seeds {
+					if idx%2 == 1 {
+						// even numbers represent ranges
+						seedRanges = append(seedRanges, seed)
+					} else {
+						seedStart = append(seedStart, seed)
+					}
+				}
+
+				seeds = []int{} // reset everything
+				for index, seed := range seedStart {
+					for i := seed; i < seed+seedRanges[index]; i++ {
+						seeds = append(seeds, i)
+					}
+				}
+			}
+
 		} else {
 			if strings.Contains(line, string(':')) {
 				instructionNumber++
@@ -57,32 +83,31 @@ func mainErr() error {
 		}
 	}
 
-	//  i get this but its got issues
-	// ➜  05-seed-fertilizer git:(main) ✗ go run main.go
-	// 0  start  79
-	// 0  end  82 RIGHT
-	// 1  start  14
-	// 1  end  32 WRONG
-	// 2  start  55
-	// 2  end  36 WRONG
-	// 3  start  13
-	// 3  end  35 RIGHT
+	fmt.Println(seeds)
 
-	for idx, seed := range seeds {
-		fmt.Println(idx, " start ", seed)
+	// word := []string{"soil", "fertilizer", "water", "light", "temp", "humidity", "location"}
+
+	finalSeedValue := []int{}
+	for _, seed := range seeds {
 		for _, next := range []int{1, 2, 3, 4, 5, 6, 7} {
+			// fmt.Println("start ", word[j], idx, seed)
 			for _, instruction := range instructions[next] {
 				// if seed is within target source for instruction
-				if instruction.Source <= seed && seed <= instruction.Source+instruction.Range {
-					differenceBeteenSeedAndSource := seed - instruction.Source
-					seed = instruction.Destination + differenceBeteenSeedAndSource
-					continue
+				if instruction.Source <= seed && seed < instruction.Source+instruction.Range {
+					// differenceBeteenSeedAndSource := seed - instruction.Source
+					seed = instruction.Destination + seed - instruction.Source
+					break
 				}
 			}
+			// fmt.Println("end ", word[j], idx, seed)
 		}
-		fmt.Println(idx, " end ", seed)
+		finalSeedValue = append(finalSeedValue, seed)
 
 	}
+
+	slices.Sort(finalSeedValue)
+	fmt.Println(finalSeedValue)
+	fmt.Println(finalSeedValue[0])
 
 	// i hate iterating through maps in go because theyre not deterministically ordered. i
 	// wonder if i should have modeled as an array
