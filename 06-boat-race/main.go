@@ -89,12 +89,24 @@ func parse(text string) []int {
 	blob := strings.Split(text, string(':'))[1]
 	strNumbs := regexWhitespace.Split(blob, -1)
 	var nums []int
-	for _, strNum := range strNumbs {
-		strNum = strings.TrimSpace(strNum)
-		if strNum != "" {
-			num := unsafeStringToNumber(strNum)
-			nums = append(nums, num)
+	var concatenatedNumbers string
+
+	part2 := true
+	if part2 {
+		concatenatedNumbers = strings.Join(strNumbs, "")
+		num := unsafeStringToNumber(concatenatedNumbers)
+		nums = append(nums, num)
+	} else {
+		for _, strNum := range strNumbs {
+			strNum = strings.TrimSpace(strNum)
+
+			if strNum != "" {
+			} else {
+				num := unsafeStringToNumber(strNum)
+				nums = append(nums, num)
+			}
 		}
+
 	}
 
 	return nums
