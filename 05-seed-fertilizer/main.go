@@ -79,9 +79,10 @@ func mainErr() error {
 	// word := []string{"soil", "fertilizer", "water", "light", "temp", "humidity", "location"}
 
 	min := int(math.Inf(1))
-	for _, rng := range seedRanges {
+	for innnnnn, rng := range seedRanges {
+		fmt.Println(innnnnn)
 		for seed := rng.Source; seed < rng.Source+rng.Range; seed += 1 {
-			fmt.Println(seed)
+			// fmt.Println(seed)
 			seed := seed // todo I think this is required bc im mutating seed on 89? but why is this required? ug
 			for _, next := range []int{1, 2, 3, 4, 5, 6, 7} {
 				for _, instruction := range instructions[next] {
