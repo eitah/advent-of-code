@@ -3,10 +3,12 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"math"
 	"os"
-	"slices"
 	"strconv"
 	"strings"
+
+	"github.com/davecgh/go-spew/spew"
 )
 
 func main() {
@@ -18,8 +20,8 @@ func main() {
 type Elf []int64
 
 func mainErr() error {
-	readFile, err := os.Open("short.txt")
-	// readFile, err := os.Open("full.txt")
+	// readFile, err := os.Open("short.txt")
+	readFile, err := os.Open("full.txt")
 	if err != nil {
 		return err
 	}
@@ -37,6 +39,8 @@ func mainErr() error {
 	}
 
 	var seeds []int
+	seedRanges := []Instruction{}
+
 	instructions := map[int][]Instruction{}
 
 	instructionNumber := 0
@@ -52,25 +56,14 @@ func mainErr() error {
 			}
 
 			// mutate the seeds array to have the right ranges in it
-			// this is such a hack no wonder (in part) it memory leaks
 			part2 := true
 			if part2 {
-				seedRanges := []int{}
-				seedStart := []int{}
-				for idx, seed := range seeds {
-					if idx%2 == 1 {
-						// even numbers represent ranges
-						seedRanges = append(seedRanges, seed)
-					} else {
-						seedStart = append(seedStart, seed)
-					}
-				}
 
-				seeds = []int{} // reset everything
-				for index, seed := range seedStart {
-					for i := seed; i < seed+seedRanges[index]; i++ {
-						seeds = append(seeds, i)
-					}
+				for idx := 0; idx < len(seeds); idx += 2 {
+					seedRanges = append(seedRanges, Instruction{
+						Source: seeds[idx],
+						Range:  seeds[idx+1],
+					})
 				}
 			}
 
@@ -83,34 +76,31 @@ func mainErr() error {
 		}
 	}
 
-	fmt.Println(seeds)
-
 	// word := []string{"soil", "fertilizer", "water", "light", "temp", "humidity", "location"}
 
-	finalSeedValue := []int{}
-	for _, seed := range seeds {
-		for _, next := range []int{1, 2, 3, 4, 5, 6, 7} {
-			// fmt.Println("start ", word[j], idx, seed)
-			for _, instruction := range instructions[next] {
-				// if seed is within target source for instruction
-				if instruction.Source <= seed && seed < instruction.Source+instruction.Range {
-					// differenceBeteenSeedAndSource := seed - instruction.Source
-					seed = instruction.Destination + seed - instruction.Source
-					break
+	min := int(math.Inf(1))
+	for _, rng := range seedRanges {
+		for seed := rng.Source; seed < rng.Source+rng.Range; seed += 1 {
+			fmt.Println(seed)
+			seed := seed // todo I think this is required bc im mutating seed on 89? but why is this required? ug
+			for _, next := range []int{1, 2, 3, 4, 5, 6, 7} {
+				for _, instruction := range instructions[next] {
+					// if seed is within target source for instruction
+					if instruction.Source <= seed && seed < instruction.Source+instruction.Range {
+						differenceBetweenSeedAndSource := seed - instruction.Source
+						seed = instruction.Destination + differenceBetweenSeedAndSource
+						break
+					}
 				}
 			}
-			// fmt.Println("end ", word[j], idx, seed)
-		}
-		finalSeedValue = append(finalSeedValue, seed)
 
+			if seed < min {
+				min = seed
+			}
+		}
 	}
 
-	slices.Sort(finalSeedValue)
-	fmt.Println(finalSeedValue)
-	fmt.Println(finalSeedValue[0])
-
-	// i hate iterating through maps in go because theyre not deterministically ordered. i
-	// wonder if i should have modeled as an array
+	spew.Dump(min)
 
 	return nil
 }
@@ -145,3 +135,29 @@ func unsafeStringToNumber(str string) int {
 	}
 	return num
 }
+
+// first attempt used a giant array
+// finalSeedValue := []int{}
+// for _, seed := range seeds {
+// 	for _, next := range []int{1, 2, 3, 4, 5, 6, 7} {
+// 		// fmt.Println("start ", word[j], idx, seed)
+// 		for _, instruction := range instructions[next] {
+// 			// if seed is within target source for instruction
+// 			if instruction.Source <= seed && seed < instruction.Source+instruction.Range {
+// 				// differenceBeteenSeedAndSource := seed - instruction.Source
+// 				seed = instruction.Destination + seed - instruction.Source
+// 				break
+// 			}
+// 		}
+// 		// fmt.Println("end ", word[j], idx, seed)
+// 	}
+// 	finalSeedValue = append(finalSeedValue, seed)
+
+// }
+
+// slices.Sort(finalSeedValue)
+// fmt.Println(finalSeedValue)
+// fmt.Println(finalSeedValue[0])
+
+// i hate iterating through maps in go because theyre not deterministically ordered. i
+// wonder if i should have modeled as an array
