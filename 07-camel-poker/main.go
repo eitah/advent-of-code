@@ -51,6 +51,7 @@ func mainErr() error {
 	for _, line := range input {
 		h := parseHand(line)
 		h.AssignTypeLabel()
+		h.MutateForJokers()
 		hands = append(hands, h)
 	}
 
@@ -82,7 +83,12 @@ func mainErr() error {
 	for idx, h := range hands {
 		rank := idx + 1
 		winnings := h.Bid * rank
-		fmt.Println("after", h.CardOrder, h.TypeLabel, h.Bid, rank, winnings)
+		// fmt.Println("after", h.CardOrder, h.TypeLabel, h.Bid, rank, winnings)
+
+		if h.before != "" {
+			fmt.Println("after", h.before, h.CardOrder, h.TypeLabel)
+
+		}
 		sum += winnings
 	}
 
@@ -90,35 +96,6 @@ func mainErr() error {
 
 	return nil
 }
-
-// func RankTwoHands(h1, h2 Hand) bool {
-// 	// if one hand is higher hirearchy than the other, return that hand
-// 	if slices.Index(handHirearchy, h1.TypeLabel) != slices.Index(handHirearchy, h2.TypeLabel) {
-// 		return slices.Index(handHirearchy, h1.TypeLabel) < slices.Index(handHirearchy, h2.TypeLabel)
-// 	}
-
-// 	// if the two hands have the same hirearchy, return the highest card in order
-// 	for i := 0; i < 4; i++ {
-// 		if h1.CardOrder[i] != h2.CardOrder[i] {
-// 			return slices.Index(cardHirearchy, string(h1.CardOrder[i])) < slices.Index(cardHirearchy, string(h2.CardOrder[i]))
-// 		}
-// 	}
-
-// 	panic("two hands have same score" + h1.CardOrder + h2.CardOrder)
-// }
-
-// func rankOrderHands(hands []Hand) {
-// 	mapofHandsByTypeLabel := map[string][]Hand{}
-// 	for _, h := range hands {
-// 		mapofHandsByTypeLabel[h.TypeLabel] = append(mapofHandsByTypeLabel[h.TypeLabel], h)
-// 	}
-
-// 	for typeLabel, hand := range mapofHandsByTypeLabel {
-
-// 	}
-
-// 	spew.Dump(mapofHandsByTypeLabel)
-// }
 
 const fiveOfAKind = "Five of a kind"
 const fourOfAKind = "Four of a kind"
@@ -138,10 +115,91 @@ var handHirearchy = []string{
 	fiveOfAKind,
 }
 
+// part 1
+// var cardHirearchy = []string{
+// 	"2", "3", "4", "5", "6", "7", "8", "9", "T", "J", "Q", "K", "A",
+// }
+
+// part 2
 var cardHirearchy = []string{
-	"2", "3", "4", "5", "6", "7", "8", "9", "T", "J", "Q", "K", "A",
+	"J", "2", "3", "4", "5", "6", "7", "8", "9", "T", "Q", "K", "A",
 }
 
+func (h *Hand) MutateForJokers() {
+	numJokers := h.Cards[string("J")]
+	if numJokers == 0 {
+		return // no need to proceed further if there are no jokers
+	}
+
+	h.before = h.TypeLabel
+
+	switch h.TypeLabel {
+	case fiveOfAKind:
+		// no need to act if there are five jokers
+	case fourOfAKind:
+		if numJokers == 1 {
+			// only increment TypeLabel if jokers are the minority
+			h.TypeLabel = fiveOfAKind
+		}
+	case fullHouse:
+		switch numJokers {
+		case 3:
+			h.TypeLabel = fiveOfAKind
+
+		case 2:
+			h.TypeLabel = fiveOfAKind
+
+		default:
+			panic("full house not handled correctly: " + h.CardOrder)
+		}
+	case threeOfAKind:
+		switch numJokers {
+		case 3:
+			h.TypeLabel = fourOfAKind
+
+		case 2:
+			h.TypeLabel = fiveOfAKind
+
+		case 1:
+			h.TypeLabel = fourOfAKind
+
+		default:
+			panic("threeofakind not handled correctly: " + h.CardOrder)
+		}
+	case twoPair:
+		switch numJokers {
+		case 2:
+			h.TypeLabel = fourOfAKind
+
+		case 1:
+			h.TypeLabel = fullHouse
+
+		default:
+			panic("twopair not handled correctly: " + h.CardOrder)
+		}
+	case onePair:
+		switch numJokers {
+		case 2:
+			// this falls through but i cant remember syntax for that
+			h.TypeLabel = threeOfAKind
+
+		case 1:
+			h.TypeLabel = threeOfAKind
+		default:
+			panic("one pair not handled correctly: " + h.CardOrder)
+		}
+	case highCard:
+		h.TypeLabel = onePair
+	default:
+		panic("switch statement not handled correctly: " + h.CardOrder)
+	}
+
+	if h.before == h.TypeLabel {
+		h.before = ""
+	}
+}
+
+// part 1
 func (h *Hand) AssignTypeLabel() {
 	if h.MapofCardsByCount[5] != nil {
 		h.TypeLabel = fiveOfAKind
@@ -181,6 +239,7 @@ func parseHand(line string) Hand {
 }
 
 type Hand struct {
+	before            string
 	CardOrder         string
 	Cards             map[string]int
 	Bid               int
