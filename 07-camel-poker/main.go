@@ -12,6 +12,9 @@ import (
 	"github.com/davecgh/go-spew/spew"
 )
 
+// the other special test input file is a much better test input. just run against your code.
+// https://www.reddit.com/r/adventofcode/comments/18cr4xr/2023_day_7_better_example_input_not_a_spoiler/
+
 func main() {
 	if err := mainErr(); err != nil {
 		panic(err)
@@ -83,12 +86,12 @@ func mainErr() error {
 	for idx, h := range hands {
 		rank := idx + 1
 		winnings := h.Bid * rank
-		// fmt.Println("after", h.CardOrder, h.TypeLabel, h.Bid, rank, winnings)
+		fmt.Println("after", h.CardOrder, h.TypeLabel, h.Bid, rank, winnings)
 
-		if h.before != "" {
-			fmt.Println("after", h.before, h.CardOrder, h.TypeLabel)
+		// if h.before == twoPair {
+		// 	fmt.Println(h.before, "       >      ", h.CardOrder, "      >      ", h.TypeLabel)
 
-		}
+		// }
 		sum += winnings
 	}
 
@@ -137,35 +140,11 @@ func (h *Hand) MutateForJokers() {
 	case fiveOfAKind:
 		// no need to act if there are five jokers
 	case fourOfAKind:
-		if numJokers == 1 {
-			// only increment TypeLabel if jokers are the minority
-			h.TypeLabel = fiveOfAKind
-		}
+		h.TypeLabel = fiveOfAKind
 	case fullHouse:
-		switch numJokers {
-		case 3:
-			h.TypeLabel = fiveOfAKind
-
-		case 2:
-			h.TypeLabel = fiveOfAKind
-
-		default:
-			panic("full house not handled correctly: " + h.CardOrder)
-		}
+		h.TypeLabel = fiveOfAKind
 	case threeOfAKind:
-		switch numJokers {
-		case 3:
-			h.TypeLabel = fourOfAKind
-
-		case 2:
-			h.TypeLabel = fiveOfAKind
-
-		case 1:
-			h.TypeLabel = fourOfAKind
-
-		default:
-			panic("threeofakind not handled correctly: " + h.CardOrder)
-		}
+		h.TypeLabel = fourOfAKind
 	case twoPair:
 		switch numJokers {
 		case 2:
