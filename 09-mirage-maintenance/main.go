@@ -70,26 +70,41 @@ func mainErr() error {
 		histories[seriesNumber] = allDiffs
 	}
 
-	// to test this before trying to loop over all histories, I just limited it to
-	// a single history.
-	// history := histories[0]
-
+	// part 1
 	var sumAllPredictions int
 	var predictions []int
 
+	// for _, history := range histories {
+	// 	var next int
+	// 	for _, observations := range history {
+	// 		// add the final observation in each series together
+	// 		next += observations[len(observations)-1]
+	// 	}
+	// 	predictions = append(predictions, next)
+	// 	sumAllPredictions += next
+	// }
+
+	// to test this for pt 1 and 2 before trying to loop over all histories, I
+	// just limited it to a single history.
+	// history := histories[2]
+
+	// OK THIS IS ???? I DONT UNDERSTAND WHAT I WROTE BUT ITS THE RIGHT ANSWER
+	// part 2
 	for _, history := range histories {
-		var next int
+		var previous int
+		var cached int
 		for _, observations := range history {
-			// add the final observation in each series together
-			next += observations[len(observations)-1]
+			lastValue := observations[0]
+			previous = lastValue - cached
+			cached = previous
+			// fmt.Println(cached, observations[0])
 		}
-		predictions = append(predictions, next)
-		sumAllPredictions += next
+		predictions = append(predictions, previous)
+		sumAllPredictions += previous
 	}
 
-	// fmt.Println(predictions)
+	fmt.Println(predictions)
 	fmt.Println(sumAllPredictions)
-	// each observation represents a list of data points
 
 	return nil
 }
