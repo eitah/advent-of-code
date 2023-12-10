@@ -59,6 +59,7 @@ func main() {
 		maze[idxRow+1] = pipes
 	}
 
+	// part 1
 	var seen []Position
 	pos = TakeAStep(maze, pos)
 	seen = append(seen, pos)
@@ -66,13 +67,71 @@ func main() {
 	for pos.Symbol != "S" {
 		pos = TakeAStep(maze, pos)
 		seen = append(seen, pos)
-		// if pos.Symbol == "S" {
-		// 	break
-		// }
+	}
+	// fmt.Println("half length:", len(seen)/2)
+
+	// part 2
+	// this was my brute force approach which didnt work
+	// var insideCount int
+	// for y := 1; y < len(maze); y++ {
+	// 	insideOfMazeForCurrentRow := false
+	// 	for x := 1; x < len(maze[y]); x++ {
+	// 		currentLoc := Position{X: x, Y: y}
+	// 		currentLoc.Symbol = maze[y][x]
+	// 		if hasPositionBeenSeen(seen, currentLoc) {
+	// 			// a "-" space should not toggle the inside counter bc its parallel with
+	// 			// the string
+	// 			if currentLoc.Symbol != string("-") {
+	// 				insideOfMazeForCurrentRow = !insideOfMazeForCurrentRow
+	// 			}
+	// 		} else if insideOfMazeForCurrentRow {
+	// 			fmt.Println("unseen", "{ pos:", currentLoc.Symbol, "X:", currentLoc.X, ", Y:", currentLoc.Y, "} added")
+	// 			insideCount++
+	// 		}
+	// 	}
+	// }
+
+	// part 2 with cheating from reddit from here https://www.reddit.com/r/adventofcode/comments/18f1sgh/2023_day_10_part_2_advise_on_part_2/
+
+	// use shoelace theorem to find the area of the loop
+	area := shoelace(seen)
+	// this is a poor mans abs value because area cannot be negative
+	if area < 0 {
+		area = area * -1
 	}
 
-	fmt.Println("full length:", len(seen))
-	fmt.Println("half length:", len(seen)/2)
+	// with area use picks theorem to find the number of enclosing dots
+	numPointsInsideLoop := picksTheoremForNumInteriorPoints(area, len(seen))
+	fmt.Println("area: ", area)
+	fmt.Println("numPointsInsideLoop: ", numPointsInsideLoop)
+
+	// spew.Dump(insideCount)
+}
+
+func picksTheoremForNumInteriorPoints(area int, boundaryPoints int) int {
+	return area + 1 - (boundaryPoints / 2)
+}
+
+func shoelace(points []Position) int {
+	sum := 0
+	lastPoint := points[len(points)-1]
+	for i := 0; i < len(points); i++ {
+		point := points[i]
+		sum += lastPoint.Y*point.X - lastPoint.X*point.Y
+		lastPoint = point
+	}
+
+	return sum / 2
+}
+
+func hasPositionBeenSeen(pipe []Position, self Position) bool {
+	for _, pos := range pipe {
+		if pos.X == self.X && pos.Y == self.Y {
+			return true
+		}
+	}
+
+	return false
 }
 
 var guide = map[string][]string{
@@ -99,7 +158,7 @@ var stepToPosition = map[string]Position{
 }
 
 func TakeAStep(maze map[int]map[int]string, pos Position) Position {
-	fmt.Println(pos.Symbol, pos.Next, "{ X:", pos.X, ", Y:", pos.Y, "}")
+	// fmt.Println(pos.Symbol, pos.Next, "{ X:", pos.X, ", Y:", pos.Y, "}")
 	// take users direction of step and reverse it bc thats how the pipe
 	// understands it. only maybe dont need?
 	// comingFrom := invertDirection[pos.ArrivalDirection]
