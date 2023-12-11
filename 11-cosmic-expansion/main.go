@@ -2,11 +2,17 @@ package main
 
 import (
 	"bufio"
+	"fmt"
+	"math"
 	"os"
+	"slices"
+	"strconv"
 	"strings"
 
 	"github.com/davecgh/go-spew/spew"
 )
+
+var galaxies = []Galaxy{}
 
 func main() {
 	readFile, err := os.Open("short.txt")
@@ -34,7 +40,6 @@ func main() {
 	}
 
 	var columnMapStarfield = make(map[int]string, len(input))
-	var galaxies = []Galaxy{}
 	var rowsWithoutStars []int
 	var colsWithoutStars []int
 
@@ -63,12 +68,46 @@ func main() {
 		}
 	}
 
+	// expand the galaxies to get their real positions
 	for idx, gal := range galaxies {
 		gal = expand(gal, rowsWithoutStars, colsWithoutStars)
 		galaxies[idx] = gal
 	}
 
-	spew.Dump(galaxies)
+	// todo how to do this in mapset
+	made := []string{}
+	// make set of all pairings of galaxies in a dumb way
+	for i := 1; i < len(galaxies); i++ {
+		self := galaxies[i]
+		for _, gal := range galaxies {
+			if gal.id == self.id {
+				continue
+			}
+
+			var pair string
+			if gal.id < self.id {
+				pair = fmt.Sprintf("%d->%d", gal.id, self.id)
+			} else {
+				pair = fmt.Sprintf("%d->%d", self.id, gal.id)
+			}
+
+			if !slices.Contains(made, pair) {
+				made = append(made, pair)
+			}
+		}
+	}
+
+	var sum int
+	for _, p := range made {
+		pairIDs := strings.Split(p, "->")
+		gal1 := galById(pairIDs[0])
+		gal2 := galById(pairIDs[1])
+
+		sum += findSteps(gal1, gal2)
+	}
+
+	// fmt.Println(made, len(made))
+	spew.Dump(sum)
 }
 
 func expand(gal Galaxy, rowsWithoutStars, colsWithoutStars []int) Galaxy {
@@ -91,10 +130,41 @@ func expand(gal Galaxy, rowsWithoutStars, colsWithoutStars []int) Galaxy {
 	return gal
 }
 
+func findSteps(g1, g2 Galaxy) int {
+	stepsX := math.Abs(float64(g1.X - g2.X))
+	stepsY := math.Abs(float64(g1.Y - g2.Y))
+
+	return int(stepsX + stepsY)
+}
+
+func galById(id string) Galaxy {
+	for _, gal := range galaxies {
+		if gal.id == unsafeStringToNumber(id) {
+			return gal
+		}
+	}
+
+	panic(fmt.Sprintf("asked for gal %s but I could not find in %d", id, len(galaxies)))
+}
+
+// type Pair struct {
+// 	g1    Galaxy
+// 	g2    Galaxy
+// 	steps int
+// }
+
 type Galaxy struct {
 	oldX int
 	oldY int
 	X    int
 	Y    int
 	id   int
+}
+
+func unsafeStringToNumber(str string) int {
+	num, err := strconv.Atoi(str)
+	if err != nil {
+		panic(err)
+	}
+	return num
 }
