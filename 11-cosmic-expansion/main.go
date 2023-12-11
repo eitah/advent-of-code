@@ -111,19 +111,24 @@ func main() {
 }
 
 func expand(gal Galaxy, rowsWithoutStars, colsWithoutStars []int) Galaxy {
+	// part 1
+	// expansionFactor := 1
+	// part 2
+	expansionFactor := 999999
+
 	// baseline galaxies where they were before
 	gal.X = gal.oldX
 	gal.Y = gal.oldY
 
 	for _, col := range colsWithoutStars {
 		if col < gal.oldX {
-			gal.X++
+			gal.X = gal.X + expansionFactor
 		}
 	}
 
 	for _, row := range rowsWithoutStars {
 		if row < gal.oldY {
-			gal.Y++
+			gal.Y = gal.Y + expansionFactor
 		}
 	}
 
