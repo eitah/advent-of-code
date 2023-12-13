@@ -97,6 +97,7 @@ func main() {
 		}
 	}
 
+	// todo rewrite to be the right ways with tuples.
 	var sum int
 	for _, p := range made {
 		pairIDs := strings.Split(p, "->")
