@@ -72,6 +72,7 @@ func main() {
 	fmt.Println("reflectedCols", reflectedCols)
 	fmt.Println("reflectedRows", reflectedRows)
 
+	// i flipped the algo and had to check reddit for another test case here https://www.reddit.com/r/adventofcode/comments/18hitog/2023_day_13_easy_additional_examples/
 	var sum int
 	for _, row := range reflectedRows {
 		sum += row
