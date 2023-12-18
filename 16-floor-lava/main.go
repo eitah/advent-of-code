@@ -48,18 +48,32 @@ func main() {
 	}
 
 	var queue []FloorTile
+	var seen []FloorTile
 	tiles[0].Arrivaldirection = "right"
 	tiles[0].Energized = true
 	next := determineNextTile(tiles, tiles[0])
 	queue = append(queue, next...)
-	fmt.Println(queue)
+	// fmt.Println(queue)
 	for len(queue) > 0 {
-		queue = append(queue, determineNextTile(tiles, queue[0])...)
-		queue = queue[1:] // drop processed item
-		// fmt.Println(queue)
-		if len(queue) > 20000 {
-			break
+		nextTiles := determineNextTile(tiles, queue[0])
+		for _, tile := range nextTiles {
+			if !slices.ContainsFunc(seen, func(t FloorTile) bool {
+				fmt.Println(len(queue), t.Arrivaldirection, t.X, t.Y)
+				// fmt.Println(seen)
+				return t.Arrivaldirection == tile.Arrivaldirection && t.X == tile.X && t.Y == tile.Y
+			}) {
+				// fmt.Println(len(queue), tile.Arrivaldirection)
+				queue = append(queue, tile)
+				seen = append(seen, queue[0]) // add dropped tile to queue
+				// queue = queue[1:]             // drop processed item
+
+			} else {
+				queue = queue[1:] // drop processed item
+			}
 		}
+		// queue = queue[1:] // drop processed item
+
+		// fmt.Println(queue)
 
 	}
 	// for idx, tile := range tiles {
@@ -116,7 +130,7 @@ func determineNextTile(tiles []FloorTile, t FloorTile) []FloorTile {
 }
 
 func (t *FloorTile) dirTravel() []string {
-	fmt.Println("travel", t.Arrivaldirection, t.Self, t.X, t.Y)
+	// fmt.Println("travel", t.Arrivaldirection, t.Self, t.X, t.Y)
 	out := []string{}
 	switch t.Arrivaldirection {
 	case "up":
