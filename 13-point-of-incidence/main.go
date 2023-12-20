@@ -163,6 +163,7 @@ func isMirrorValid(mirror Mirror) Mirror {
 	return mirror
 }
 
+// TODO have algo return an int count of differences not a bool
 // almost identical returns true if at most one character differs between the
 // two strings
 func almostIdentical(a, b string) bool {
