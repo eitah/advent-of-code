@@ -1,9 +1,9 @@
 package main
 
 import (
-	"fmt"
 	"slices"
 
+	"github.com/davecgh/go-spew/spew"
 	utils "github.com/eitah/advent-2023"
 )
 
@@ -19,26 +19,36 @@ func main() {
 
 	// Add the start to the frontier and the reached array
 	frontier := []Hex{}
-	reached := []Hex{}
+	cameFrom := map[Hex]Hex{}
 
 	frontier = append(frontier, hexes[0])
 	// frontier = append(frontier, hexes[0].Path(0, 0))
-	reached = append(reached, hexes[0])
 
 	for len(frontier) != 0 {
 		current := frontier[0]
 		for _, next := range GetNeigbors(hexes, current) {
-			if !slices.ContainsFunc(reached, hasHex(next)) {
+			// if next is not yet traveled to
+			if _, ok := cameFrom[next]; !ok {
 				frontier = append(frontier, next)
-				reached = append(reached, next)
+				cameFrom[next] = current
 			}
 		}
 
 		frontier = frontier[1:]
 	}
 
-	fmt.Println("front", frontier)
-	fmt.Println("reached", reached)
+	//start at the goal and work backwards to derive path
+	start := hexes[0]
+	current := hexes[len(hexes)-1]
+	path := []Hex{}
+	// until current.X and current.Y are at start
+	for current.X != start.X || current.Y != start.Y {
+		path = append(path, current)
+		current = cameFrom[current]
+	}
+
+	spew.Dump(reverse(path))
+	// fmt.Println("rev", reverse(path))
 
 }
 
@@ -109,4 +119,15 @@ func (h *Hex) Path(sumPower, numSquares int) Path {
 
 func hasHex(next Hex) func(Hex) bool {
 	return func(hex Hex) bool { return next.X == hex.X && next.Y == hex.Y }
+}
+
+// paths sometimes get generated backwards so its good to reverse to see the
+// real path
+func reverse(paths []Hex) []Hex {
+	var out []Hex
+	for _, h := range paths {
+		// add new items on to the front of the array
+		out = append([]Hex{h}, out...)
+	}
+	return out
 }
