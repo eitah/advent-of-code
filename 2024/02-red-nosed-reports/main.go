@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"math"
 	"os"
 	"strconv"
 	"strings"
@@ -40,21 +41,37 @@ func part1(list [][]int) {
 }
 
 func markSafe(row []int) bool {
-	if notAllDecreasing(row) && notAllIncreasing(row) {
-		return false
+	dec1, idx := notAllDecreasing(row)
+	inc1, idx2 := notAllIncreasing(row)
+	greatestIdx := int(math.Max(float64(idx), float64(idx2)))
+	newArrayWithoutProblem := append(row[:greatestIdx], row[greatestIdx+1:]...)
+	if dec1 && inc1 {
+		dec2, _ := notAllDecreasing(newArrayWithoutProblem)
+		inc2, _ := notAllIncreasing(newArrayWithoutProblem)
+		if dec2 && inc2 {
+			return false
+		}
 	}
 
-	return diffCheck(row)
-}
-
-func diffCheck(row []int) bool {
-	for i := 1; i < len(row); i++ {
-		diff := abs(row[i] - row[i-1])
-		if diff < 1 || diff > 3 {
+	tooBig, idx3 := diffIsTooBig(row)
+	if tooBig {
+		newArrayWithoutProblem := append(row[:idx3], row[idx3+1:]...)
+		reallyTooBig, _ := diffIsTooBig(newArrayWithoutProblem)
+		if reallyTooBig {
 			return false
 		}
 	}
 	return true
+}
+
+func diffIsTooBig(row []int) (bool, int) {
+	for i := 1; i < len(row); i++ {
+		diff := abs(row[i] - row[i-1])
+		if diff < 1 || diff > 3 {
+			return true, i - 1
+		}
+	}
+	return false, -1
 }
 
 func abs(x int) int {
@@ -64,22 +81,22 @@ func abs(x int) int {
 	return x
 }
 
-func notAllDecreasing(row []int) bool {
+func notAllDecreasing(row []int) (bool, int) {
 	for i := 1; i < len(row); i++ {
 		if row[i] >= row[i-1] {
-			return true
+			return true, i - 1
 		}
 	}
-	return false
+	return false, -1
 }
 
-func notAllIncreasing(row []int) bool {
+func notAllIncreasing(row []int) (bool, int) {
 	for i := 1; i < len(row); i++ {
 		if row[i] <= row[i-1] {
-			return true
+			return true, i - 1
 		}
 	}
-	return false
+	return false, -1
 }
 
 func parseLines(lines []string) [][]int {
