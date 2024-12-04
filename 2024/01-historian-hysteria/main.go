@@ -12,7 +12,7 @@ import (
 
 func main() {
 
-	lines, err := readInput("easy-input.txt")
+	lines, err := readInput("hard-input.txt")
 	if err != nil {
 		panic(err)
 	}
@@ -20,6 +20,31 @@ func main() {
 	sort.Ints(list1)
 	sort.Ints(list2)
 
+	// part1(list1, list2)
+	part2(list1, list2)
+}
+
+func part2(list1, list2 []int) {
+	diffs := []int{}
+	for _, item := range list1 {
+		count := 0
+		for _, item2 := range list2 {
+			if item2 == item {
+				count++
+			}
+		}
+		diffs = append(diffs, count*item)
+	}
+
+	sum := 0
+	for _, d := range diffs {
+		sum += d
+	}
+	spew.Dump(sum)
+}
+
+// Part 1
+func part1(list1, list2 []int) {
 	diffs := []int{}
 	for idx, i := range list1 {
 		difference := math.Abs(float64(i - list2[idx]))
