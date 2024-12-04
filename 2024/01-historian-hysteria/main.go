@@ -1,7 +1,70 @@
 package main
 
-import "fmt"
+import (
+	"bufio"
+	"fmt"
+	"math"
+	"os"
+	"sort"
+
+	"github.com/davecgh/go-spew/spew"
+)
 
 func main() {
-	fmt.Println("Hello, World!")
+
+	lines, err := readInput("easy-input.txt")
+	if err != nil {
+		panic(err)
+	}
+	list1, list2 := parseLines(lines)
+	sort.Ints(list1)
+	sort.Ints(list2)
+
+	diffs := []int{}
+	for idx, i := range list1 {
+		difference := math.Abs(float64(i - list2[idx]))
+		diffs = append(diffs, int(difference))
+	}
+	sum := 0
+	for _, d := range diffs {
+		sum += d
+	}
+	spew.Dump(sum)
+}
+
+func parseLines(lines []string) ([]int, []int) {
+	var nums1, nums2 []int
+	for _, line := range lines {
+		var n1, n2 int
+		fmt.Sscanf(line, "%d %d", &n1, &n2)
+		nums1 = append(nums1, n1)
+		nums2 = append(nums2, n2)
+	}
+	return nums1, nums2
+}
+
+func readInput(filename string) ([]string, error) {
+	// Read input file
+	file, err := os.Open(filename)
+	if err != nil {
+		fmt.Println("Error opening file:", err)
+		return nil, err
+	}
+	defer file.Close()
+
+	scanner := bufio.NewScanner(file)
+	var lines []string
+	for scanner.Scan() {
+		line := scanner.Text()
+		if line != "" { // Skip empty lines
+			lines = append(lines, line)
+		}
+	}
+
+	if err := scanner.Err(); err != nil {
+		fmt.Println("Error reading file:", err)
+		return nil, err
+	}
+
+	return lines, nil
 }
