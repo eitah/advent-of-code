@@ -21,7 +21,11 @@ func main() {
 		panic(err)
 	}
 	rules, orders := parseLines(raw)
+	orders = part1(rules, orders)
+	// printPart1(orders)
+}
 
+func part1(rules []Rule, orders []Order) []Order {
 	// Process each order
 	for oidx, order := range orders {
 		// Check each rule against the order
@@ -46,6 +50,10 @@ func main() {
 		}
 	}
 
+	return orders
+}
+
+func printPart1(orders []Order) {
 	// Calculate sum of middle elements from valid orders
 	sum := 0
 	for idx, order := range orders {
