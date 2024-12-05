@@ -22,14 +22,23 @@ func main() {
 	}
 	rules, orders := parseLines(raw)
 
-	// every order strts out good so i only need to check if it's bad
+	// Process each order
 	for oidx, order := range orders {
+		// Check each rule against the order
 		for idx, rule := range rules {
+			// Skip if we already marked this order as invalid
 			if !order.isGood {
 				continue
 			}
+
+			// Check if both pages in the rule exist in this order
 			if slices.Contains(order.pages, rule.first) && slices.Contains(order.pages, rule.last) {
-				if slices.Index(order.pages, rule.first) > slices.Index(order.pages, rule.last) {
+				// Get the indices of both pages
+				firstIdx := slices.Index(order.pages, rule.first)
+				lastIdx := slices.Index(order.pages, rule.last)
+
+				// If first page comes after last page, order is invalid
+				if firstIdx > lastIdx {
 					fmt.Printf("order %d rule %d is bad because %d is before %d\n", oidx, idx, rule.first, rule.last)
 					orders[oidx].isGood = false
 				}
@@ -37,14 +46,15 @@ func main() {
 		}
 	}
 
+	// Calculate sum of middle elements from valid orders
 	sum := 0
-	for idx, o := range orders {
-		spew.Printf("orders %d is %t\n", idx, o.isGood)
-		if o.isGood {
-			middle := int(len(o.pages) / 2)
-			elementMiddle := o.pages[middle]
-			fmt.Printf("order %d is good with middle element %d\n", idx, elementMiddle)
-			sum += elementMiddle
+	for idx, order := range orders {
+		spew.Printf("order %d is %t\n", idx, order.isGood)
+		if order.isGood {
+			middle := len(order.pages) / 2
+			middleElement := order.pages[middle]
+			fmt.Printf("order %d is good with middle element %d\n", idx, middleElement)
+			sum += middleElement
 		}
 	}
 	fmt.Printf("sum is %d\n", sum)
