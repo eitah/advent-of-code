@@ -4,6 +4,7 @@ import (
 	"os"
 	"regexp"
 	"strconv"
+	"strings"
 
 	"github.com/davecgh/go-spew/spew"
 )
@@ -17,20 +18,37 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	spew.Dump(memory)
 
-	part1(memory)
+	// spew.Dump(part1(memory))
+	part2(memory)
 }
 
 var rgxMemory = regexp.MustCompile(`mul\(([0-9]+),([0-9]+)\)`)
+var rgxRange = regexp.MustCompile(`do\(\).*?don't\(\)`)
 
-func part1(memory string) {
+func part2(memory string) {
+	memory = "do()" + strings.Trim(memory, "\n") + "don't()"
+	// spew.Dump(memory)
+	matches := rgxRange.FindAllStringSubmatchIndex(memory, -1)
+	spew.Dump(len(matches))
+	sum := 0
+	count := 0
+	for _, match := range matches {
+		substr := memory[match[0]:match[1]]
+		spew.Dump(substr)
+		sum += part1(substr)
+		count++
+	}
+	spew.Dump(sum, count)
+}
+
+func part1(memory string) int {
 	matches := rgxMemory.FindAllStringSubmatch(memory, -1)
 	sum := 0
 	for _, match := range matches {
 		sum += unsafeStrToNum(match[1]) * unsafeStrToNum(match[2])
 	}
-	spew.Dump(sum)
+	return sum
 }
 
 func readInput(filename string) (string, error) {
