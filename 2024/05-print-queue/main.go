@@ -23,13 +23,50 @@ func main() {
 	rules, orders := parseLines(raw)
 	orders = part1(rules, orders)
 	// printPart1(orders)
+
+	part2(rules, invalidOrders(orders))
+}
+
+func part2(rules []Rule, orders []Order) {
+	spew.Printf("orders is length %d\n", len(orders))
+	for idx, o := range orders {
+		for _, rule := range rules {
+			slices.SortFunc(o.pages, sortPagesFunc(rule, o))
+		}
+		orders[idx] = o
+	}
+	spew.Dump(orders)
+}
+
+func invalidOrders(orders []Order) []Order {
+	var out []Order
+	for _, order := range orders {
+		if order.isGood {
+			continue
+		}
+		out = append(out, order)
+	}
+	return out
+}
+
+func sortPagesFunc(rule Rule, o Order) func(a, b int) int {
+	return func(a, b int) int {
+		if !slices.Contains(o.pages, rule.first) || !slices.Contains(o.pages, rule.last) {
+			// dont sort rules that dont apply
+			return 0
+		}
+		if a == rule.first && b == rule.last {
+			return 1
+		}
+		return -1
+	}
 }
 
 func part1(rules []Rule, orders []Order) []Order {
 	// Process each order
 	for oidx, order := range orders {
 		// Check each rule against the order
-		for idx, rule := range rules {
+		for _, rule := range rules {
 			// Skip if we already marked this order as invalid
 			if !order.isGood {
 				continue
@@ -43,7 +80,7 @@ func part1(rules []Rule, orders []Order) []Order {
 
 				// If first page comes after last page, order is invalid
 				if firstIdx > lastIdx {
-					fmt.Printf("order %d rule %d is bad because %d is before %d\n", oidx, idx, rule.first, rule.last)
+					// fmt.Printf("order %d rule %d is bad because %d is before %d\n", oidx, idx, rule.first, rule.last)
 					orders[oidx].isGood = false
 				}
 			}
