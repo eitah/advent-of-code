@@ -30,9 +30,8 @@ func main() {
 func part2(rules []Rule, orders []Order) {
 	spew.Printf("orders is length %d\n", len(orders))
 	for idx, o := range orders {
-		for _, rule := range rules {
-			slices.SortFunc(o.pages, sortPagesFunc(rule, o))
-		}
+
+		slices.SortFunc(o.pages, sortPagesFunc(rules, o))
 		orders[idx] = o
 	}
 	spew.Dump(orders)
@@ -49,45 +48,55 @@ func invalidOrders(orders []Order) []Order {
 	return out
 }
 
-func sortPagesFunc(rule Rule, o Order) func(a, b int) int {
+func sortPagesFunc(rules []Rule, o Order) func(a, b int) int {
 	return func(a, b int) int {
-		if !slices.Contains(o.pages, rule.first) || !slices.Contains(o.pages, rule.last) {
-			// dont sort rules that dont apply
-			return 0
-		}
-		if a == rule.first && b == rule.last {
+		for _, rule := range rules {
+
+			if !slices.Contains(o.pages, rule.first) || !slices.Contains(o.pages, rule.last) {
+				// dont sort rules that dont apply
+				return 0
+			}
+			if a == rule.first && b == rule.last {
+				return -1
+			}
 			return 1
 		}
-		return -1
 	}
 }
 
 func part1(rules []Rule, orders []Order) []Order {
 	// Process each order
-	for oidx, order := range orders {
+	for idx, order := range orders {
 		// Check each rule against the order
-		for _, rule := range rules {
-			// Skip if we already marked this order as invalid
-			if !order.isGood {
-				continue
-			}
+		// Skip if we already marked this order as invalid
+		// Check if both pages in the rule exist in this order
+		// Get the indices of both pages
+		// If first page comes after last page, order is invalid
+		// fmt.Printf("order %d rule %d is bad because %d is before %d\n", oidx, idx, rule.first, rule.last)
 
-			// Check if both pages in the rule exist in this order
-			if slices.Contains(order.pages, rule.first) && slices.Contains(order.pages, rule.last) {
-				// Get the indices of both pages
-				firstIdx := slices.Index(order.pages, rule.first)
-				lastIdx := slices.Index(order.pages, rule.last)
-
-				// If first page comes after last page, order is invalid
-				if firstIdx > lastIdx {
-					// fmt.Printf("order %d rule %d is bad because %d is before %d\n", oidx, idx, rule.first, rule.last)
-					orders[oidx].isGood = false
-				}
-			}
-		}
+		orders[idx].isGood = checkOrderForValidity(rules, order)
 	}
 
 	return orders
+}
+func checkOrderForValidity(rules []Rule, order Order) bool {
+	for _, rule := range rules {
+
+		if !order.isGood {
+			continue
+		}
+
+		if slices.Contains(order.pages, rule.first) && slices.Contains(order.pages, rule.last) {
+
+			firstIdx := slices.Index(order.pages, rule.first)
+			lastIdx := slices.Index(order.pages, rule.last)
+
+			if firstIdx > lastIdx {
+				return false
+			}
+		}
+	}
+	return order.isGood
 }
 
 func printPart1(orders []Order) {
